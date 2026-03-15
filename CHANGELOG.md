@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.2] - 2026-03-15
+
+### Added
+- FAQ section on landing page with accordion UI (why kin3o, pricing, providers, output quality, customization)
+
 ## [0.2.1] - 2026-03-15
 
 ### Added
