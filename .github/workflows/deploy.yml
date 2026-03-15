@@ -28,13 +28,11 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
-          envs: REPO_TOKEN
           script: |
             set -e
             cd ~/kin3o
 
             echo "Pulling latest code..."
-            git remote set-url origin "https://x-access-token:${REPO_TOKEN}@github.com/affromero/kin3o.git"
             git checkout -- .
             git clean -fd
             git pull origin main
@@ -44,8 +42,6 @@ jobs:
             sudo caddy reload --config /etc/caddy/Caddyfile --force
 
             echo "Deploy complete!"
-        env:
-          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
 
   notify:
     name: Telegram Notification
