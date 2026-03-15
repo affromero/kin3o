@@ -1,8 +1,8 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { extractJson, extractInteractiveJson, hexToLottieColor, slugify, nextVersionedPath } from './utils.js';
+import { extractJson, extractInteractiveJson, hexToLottieColor, slugify, nextVersionedPath, filterCliStderr, ensureOutputDir } from './utils.js';
 
 describe('extractJson', () => {
   it('extracts raw JSON', () => {
@@ -160,5 +160,45 @@ describe('nextVersionedPath', () => {
   it('handles non-existent output dir gracefully', () => {
     const result = nextVersionedPath('anim.json', '/tmp/nonexistent-dir-xyz');
     assert.strictEqual(result, join('/tmp/nonexistent-dir-xyz', 'anim-v2.json'));
+  });
+});
+
+describe('filterCliStderr', () => {
+  it('strips PATH update warnings', () => {
+    const stderr = 'Loading config...\ncould not update PATH\nReady.';
+    assert.strictEqual(filterCliStderr(stderr), 'Loading config...\nReady.');
+  });
+
+  it('returns empty string when all lines are PATH warnings', () => {
+    assert.strictEqual(filterCliStderr('could not update PATH'), '');
+  });
+
+  it('preserves meaningful error messages', () => {
+    const stderr = 'Error: authentication failed\nPlease run auth';
+    assert.strictEqual(filterCliStderr(stderr), stderr);
+  });
+
+  it('handles empty input', () => {
+    assert.strictEqual(filterCliStderr(''), '');
+  });
+});
+
+describe('ensureOutputDir', () => {
+  const tmpDir = join(process.cwd(), '.test-tmp-output');
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('creates the directory if it does not exist', () => {
+    const result = ensureOutputDir('.test-tmp-output');
+    assert.ok(existsSync(result));
+    assert.ok(result.endsWith('.test-tmp-output'));
+  });
+
+  it('succeeds if directory already exists', () => {
+    mkdirSync(tmpDir, { recursive: true });
+    const result = ensureOutputDir('.test-tmp-output');
+    assert.ok(existsSync(result));
   });
 });
