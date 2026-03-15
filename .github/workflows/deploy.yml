@@ -33,6 +33,7 @@ jobs:
             cd ~/kin3o
 
             echo "Pulling latest code..."
+            git remote set-url origin git@github.com:affromero/kin3o.git
             git checkout -- .
             git clean -fd
             git pull origin main
