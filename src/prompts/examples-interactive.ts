@@ -126,7 +126,7 @@ export const INTERACTIVE_BUTTON = {
         type: 'PlaybackState',
         animation: 'idle',
         transitions: [
-          { toState: 'hover_state', guards: [{ inputName: 'hovering', conditionType: 'Equal', value: true }] },
+          { type: 'Transition', toState: 'hover_state', guards: [{ type: 'Boolean', inputName: 'hovering', conditionType: 'Equal', compareTo: true }] },
         ],
       },
       {
@@ -134,8 +134,8 @@ export const INTERACTIVE_BUTTON = {
         type: 'PlaybackState',
         animation: 'hover',
         transitions: [
-          { toState: 'idle_state', guards: [{ inputName: 'hovering', conditionType: 'Equal', value: false }] },
-          { toState: 'pressed_state', guards: [{ inputName: 'pressing', conditionType: 'Equal', value: true }] },
+          { type: 'Transition', toState: 'idle_state', guards: [{ type: 'Boolean', inputName: 'hovering', conditionType: 'Equal', compareTo: false }] },
+          { type: 'Transition', toState: 'pressed_state', guards: [{ type: 'Boolean', inputName: 'pressing', conditionType: 'Equal', compareTo: true }] },
         ],
       },
       {
@@ -143,15 +143,15 @@ export const INTERACTIVE_BUTTON = {
         type: 'PlaybackState',
         animation: 'pressed',
         transitions: [
-          { toState: 'hover_state', guards: [{ inputName: 'pressing', conditionType: 'Equal', value: false }] },
+          { type: 'Transition', toState: 'hover_state', guards: [{ type: 'Boolean', inputName: 'pressing', conditionType: 'Equal', compareTo: false }] },
         ],
       },
     ],
     interactions: [
-      { type: 'PointerEnter', actions: [{ inputName: 'hovering', value: true }] },
-      { type: 'PointerExit', actions: [{ inputName: 'hovering', value: false }] },
-      { type: 'PointerDown', actions: [{ inputName: 'pressing', value: true }] },
-      { type: 'PointerUp', actions: [{ inputName: 'pressing', value: false }] },
+      { type: 'PointerEnter', actions: [{ type: 'SetBoolean', inputName: 'hovering', value: true }] },
+      { type: 'PointerExit', actions: [{ type: 'SetBoolean', inputName: 'hovering', value: false }] },
+      { type: 'PointerDown', actions: [{ type: 'SetBoolean', inputName: 'pressing', value: true }] },
+      { type: 'PointerUp', actions: [{ type: 'SetBoolean', inputName: 'pressing', value: false }] },
     ],
     inputs: [
       { name: 'hovering', type: 'Boolean', value: false },

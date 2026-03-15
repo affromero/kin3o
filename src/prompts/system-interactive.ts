@@ -38,10 +38,12 @@ State types:
 - "GlobalState": listens globally. Fields: "name", "type", "transitions" (array)
 
 Transition format:
-{ "toState": "<target state name>", "guards": [ ... ] }
+{ "type": "Transition", "toState": "<target state name>", "guards": [ ... ] }
 
 Guard format (conditional transition):
-{ "inputName": "<input name>", "conditionType": "Equal"|"GreaterThan"|"LessThan", "value": <value> }
+- Boolean: { "type": "Boolean", "inputName": "<name>", "conditionType": "Equal", "compareTo": true/false }
+- Numeric: { "type": "Numeric", "inputName": "<name>", "conditionType": "Equal"|"GreaterThan"|"LessThan", "compareTo": <number> }
+- String: { "type": "String", "inputName": "<name>", "conditionType": "Equal", "compareTo": "<value>" }
 
 Interaction types (user events that set inputs):
 - "PointerDown": mouse click / tap
@@ -52,8 +54,16 @@ Interaction types (user events that set inputs):
 - "OnLoopComplete": animation loop completes (requires "stateName" field)
 
 Interaction format:
-{ "type": "<event type>", "actions": [{ "inputName": "<input name>", "value": <value> }] }
+{ "type": "<event type>", "actions": [{ "type": "<action type>", "inputName": "<input name>", "value": <value> }] }
 For OnComplete/OnLoopComplete add "stateName": "<which state this applies to>"
+
+Action types:
+- "SetBoolean": set a boolean input { "type": "SetBoolean", "inputName": "...", "value": true/false }
+- "Toggle": toggle a boolean input { "type": "Toggle", "inputName": "..." }
+- "Increment": increment a numeric input { "type": "Increment", "inputName": "...", "value": 1 }
+- "Decrement": decrement a numeric input { "type": "Decrement", "inputName": "...", "value": 1 }
+- "SetString": set a string input { "type": "SetString", "inputName": "...", "value": "..." }
+- "SetNumeric": set a numeric input { "type": "SetNumeric", "inputName": "...", "value": 0 }
 
 Input types:
 - "Boolean": { "name": "<name>", "type": "Boolean", "value": <default bool> }

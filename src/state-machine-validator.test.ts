@@ -95,7 +95,7 @@ describe('validateStateMachine', () => {
     const sm = {
       initial: 'a',
       states: [{ name: 'a', type: 'PlaybackState', animation: 'x' }],
-      interactions: [{ type: 'PointerDown', actions: [{ inputName: 'ghost', value: true }] }],
+      interactions: [{ type: 'PointerDown', actions: [{ type: 'SetBoolean', inputName: 'ghost', value: true }] }],
       inputs: [],
     };
     const result = validateStateMachine(sm, ['x']);

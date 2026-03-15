@@ -19,7 +19,7 @@ Every motion design tool (Rive, LottieFiles, Hera) sandboxes its AI inside a wal
 | Uses your own AI sub | Yes | No | No | No | No |
 | Custom design tokens | Yes | No | No | No | No |
 | Animation library | No | Yes (massive) | No | Yes | Yes |
-| State machines | No | Yes | No | No | Yes |
+| State machines | Yes (dotLottie) | Yes | No | No | Yes |
 | Team collaboration | No | Yes | No | Yes | Yes |
 | API access | No | Yes | No | Yes | Yes |
 | **Price** | **Free (OSS)** | **Free / $19.99+/mo** | **Waitlist (TBD)** | **Free (50/day) / $10+/mo** | **Free / up to $99/mo** |
@@ -42,11 +42,16 @@ npx tsx src/index.ts generate "5-bar audio waveform" --provider claude-code --mo
 npx tsx src/index.ts generate "notification bell" --no-preview --output bell.json
 npx tsx src/index.ts generate "loading dots" --tokens sotto  # use Sotto design tokens
 
+# Generate interactive state machine (.lottie output)
+npx tsx src/index.ts generate "toggle switch with on/off states" --interactive
+
 # Preview existing Lottie file
 npx tsx src/index.ts preview output/animation.json
+npx tsx src/index.ts preview output/animation.lottie  # interactive dotLottie
 
-# Validate Lottie JSON
+# Validate Lottie JSON or dotLottie
 npx tsx src/index.ts validate output/animation.json
+npx tsx src/index.ts validate output/animation.lottie
 
 # List available AI providers
 npx tsx src/index.ts providers
@@ -60,6 +65,7 @@ npx tsx src/index.ts providers
 | `-m, --model <name>` | Model (`sonnet`, `opus`, `haiku`, `codex`) |
 | `-o, --output <path>` | Output filename |
 | `--no-preview` | Skip browser preview |
+| `-i, --interactive` | Generate interactive state machine (`.lottie` output) |
 | `-t, --tokens <path>` | Design tokens JSON or `sotto` preset |
 
 ## Using Generated Animations
@@ -118,7 +124,7 @@ animationView.play()
 | Multi-layer compositions | ✓ | ✓ |
 | Masking, mattes | ✓ | ✓ |
 | Easing curves | ✓ | ✓ |
-| State machines (hover, click, drag → states) | ✗ | ✓ |
+| State machines (hover, click, drag → states) | ✓ (dotLottie) | ✓ |
 | Skeletal/bone animation | ✗ | ✓ |
 | Mesh deformation | ✗ | ✓ |
 | Runtime input (eyes follow cursor, sliders) | ✗ | ✓ |
@@ -128,10 +134,11 @@ Lottie covers ~90% of real-world animation needs (loading spinners, icon animati
 ## Architecture
 
 ```
-prompt → provider.generate() → extractJson() → validateLottie() → autoFix() → write JSON → openPreview()
+Static:   prompt → provider.generate() → extractJson() → validateLottie() → autoFix() → write .json → openPreview()
+Interactive: prompt → provider.generate() → extractInteractiveJson() → validate each animation + state machine → writeDotLottie() → openDotLottiePreview()
 ```
 
-Providers spawn CLI subprocesses (`claude --print`, `codex exec`) to leverage existing subscriptions. The system prompt includes a concise Lottie format spec + two hand-crafted few-shot examples.
+Providers spawn CLI subprocesses (`claude --print`, `codex exec`) to leverage existing subscriptions. The system prompt includes a concise Lottie format spec + hand-crafted few-shot examples. Interactive mode generates a multi-animation envelope with a dotLottie state machine.
 
 ## Development
 
