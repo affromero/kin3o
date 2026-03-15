@@ -21,3 +21,11 @@
 13. heart that beats with a realistic two-pulse rhythm
 14. envelope that opens and a letter slides out
 15. circular progress indicator with a gradient trail
+
+## Interactive (state machine animations)
+# Run each with: npx tsx src/index.ts generate "<prompt>" --interactive
+16. interactive toggle switch with on and off states
+17. like button that animates on hover and explodes on click
+18. notification badge that bounces in, idles, then fades on click
+19. play/pause button with smooth transitions
+20. loading spinner that transitions to checkmark on completion

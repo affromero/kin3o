@@ -3,11 +3,12 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Command } from 'commander';
 import { PROVIDERS, detectAvailableProviders, getDefaultProvider } from './providers/registry.js';
-import { buildSystemPrompt } from './prompts/system.js';
-import { loadDesignTokens } from './prompts/tokens.js';
+import { buildSystemPrompt, buildInteractiveSystemPrompt, loadDesignTokens } from './prompts/index.js';
 import { validateLottie, autoFix } from './validator.js';
-import { openPreview } from './preview.js';
-import { extractJson, slugify, ensureOutputDir } from './utils.js';
+import { validateStateMachine } from './state-machine-validator.js';
+import { openPreview, openDotLottiePreview } from './preview.js';
+import { writeDotLottie, readDotLottie } from './packager.js';
+import { extractJson, extractInteractiveJson, slugify, ensureOutputDir } from './utils.js';
 
 const program = new Command();
 
@@ -22,6 +23,7 @@ interface GenerateOptions {
   output?: string;
   preview: boolean;
   tokens?: string;
+  interactive: boolean;
 }
 
 program
@@ -32,8 +34,10 @@ program
   .option('-o, --output <path>', 'Output file path')
   .option('--no-preview', 'Skip opening preview in browser')
   .option('-t, --tokens <path>', 'Path to design tokens JSON (or "sotto" for built-in)')
+  .option('-i, --interactive', 'Generate interactive state machine (.lottie output)', false)
   .action(async (prompt: string, options: GenerateOptions) => {
-    console.log('\nkin3o — Generating animation...');
+    const mode = options.interactive ? 'interactive' : 'static';
+    console.log(`\nkin3o — Generating ${mode} animation...`);
 
     // 1. Detect provider
     let providerKey = options.provider;
@@ -59,50 +63,19 @@ program
     const tokens = options.tokens ? loadDesignTokens(options.tokens) : undefined;
 
     // 3. Build system prompt
-    const systemPrompt = buildSystemPrompt(tokens);
+    const systemPrompt = options.interactive
+      ? buildInteractiveSystemPrompt(tokens)
+      : buildSystemPrompt(tokens);
 
     // 4. Generate
     try {
       const result = await provider.generate(model, systemPrompt, prompt);
       console.log(`  ✓ Generated in ${(result.durationMs / 1000).toFixed(1)}s`);
 
-      // 5. Extract and parse JSON
-      const jsonStr = extractJson(result.content);
-      const lottieJson = JSON.parse(jsonStr) as object;
-
-      // 6. Validate
-      const validation = validateLottie(lottieJson);
-
-      if (!validation.valid) {
-        console.error('  ✗ Invalid Lottie JSON:');
-        validation.errors.forEach(e => console.error(`    - ${e}`));
-        process.exit(1);
-      }
-
-      // 7. Auto-fix if warnings
-      let finalJson = lottieJson;
-      if (validation.warnings.length > 0) {
-        finalJson = autoFix(lottieJson) as object;
-        const fixes = validation.warnings.length;
-        console.log(`  ✓ Valid Lottie JSON (${fixes} auto-fix${fixes > 1 ? 'es' : ''}: ${validation.warnings.join(', ')})`);
+      if (options.interactive) {
+        await handleInteractiveOutput(result.content, prompt, options);
       } else {
-        console.log('  ✓ Valid Lottie JSON');
-      }
-
-      // 8. Write output
-      const outputDir = ensureOutputDir();
-      const slug = slugify(prompt);
-      const timestamp = Math.floor(Date.now() / 1000);
-      const filename = options.output ?? `${slug}-${timestamp}.json`;
-      const outputPath = join(outputDir, filename);
-
-      writeFileSync(outputPath, JSON.stringify(finalJson, null, 2), 'utf-8');
-      console.log(`  ✓ Written to ${outputPath}`);
-
-      // 9. Preview
-      if (options.preview) {
-        const previewPath = await openPreview(finalJson);
-        console.log(`  ✓ Preview opened: ${previewPath}`);
+        await handleStaticOutput(result.content, prompt, options);
       }
 
       console.log('');
@@ -112,15 +85,120 @@ program
     }
   });
 
+async function handleStaticOutput(content: string, prompt: string, options: GenerateOptions): Promise<void> {
+  const jsonStr = extractJson(content);
+  const lottieJson = JSON.parse(jsonStr) as object;
+
+  const validation = validateLottie(lottieJson);
+  if (!validation.valid) {
+    console.error('  ✗ Invalid Lottie JSON:');
+    validation.errors.forEach(e => console.error(`    - ${e}`));
+    process.exit(1);
+  }
+
+  let finalJson = lottieJson;
+  if (validation.warnings.length > 0) {
+    finalJson = autoFix(lottieJson) as object;
+    const fixes = validation.warnings.length;
+    console.log(`  ✓ Valid Lottie JSON (${fixes} auto-fix${fixes > 1 ? 'es' : ''}: ${validation.warnings.join(', ')})`);
+  } else {
+    console.log('  ✓ Valid Lottie JSON');
+  }
+
+  const outputDir = ensureOutputDir();
+  const slug = slugify(prompt);
+  const timestamp = Math.floor(Date.now() / 1000);
+  const filename = options.output ?? `${slug}-${timestamp}.json`;
+  const outputPath = join(outputDir, filename);
+
+  writeFileSync(outputPath, JSON.stringify(finalJson, null, 2), 'utf-8');
+  console.log(`  ✓ Written to ${outputPath}`);
+
+  if (options.preview) {
+    const previewPath = await openPreview(finalJson);
+    console.log(`  ✓ Preview opened: ${previewPath}`);
+  }
+}
+
+async function handleInteractiveOutput(content: string, prompt: string, options: GenerateOptions): Promise<void> {
+  const envelope = extractInteractiveJson(content);
+  const animationIds = Object.keys(envelope.animations);
+  console.log(`  ✓ Extracted ${animationIds.length} animations: ${animationIds.join(', ')}`);
+
+  // Validate each animation
+  let totalFixes = 0;
+  const fixedAnimations: Record<string, object> = {};
+
+  for (const [id, anim] of Object.entries(envelope.animations)) {
+    const validation = validateLottie(anim);
+    if (!validation.valid) {
+      console.error(`  ✗ Animation "${id}" invalid:`);
+      validation.errors.forEach(e => console.error(`    - ${e}`));
+      process.exit(1);
+    }
+
+    if (validation.warnings.length > 0) {
+      fixedAnimations[id] = autoFix(anim) as object;
+      totalFixes += validation.warnings.length;
+    } else {
+      fixedAnimations[id] = anim;
+    }
+  }
+
+  if (totalFixes > 0) {
+    console.log(`  ✓ All animations valid (${totalFixes} auto-fix${totalFixes > 1 ? 'es' : ''})`);
+  } else {
+    console.log('  ✓ All animations valid');
+  }
+
+  // Validate state machine
+  const smValidation = validateStateMachine(envelope.stateMachine, animationIds);
+  if (!smValidation.valid) {
+    console.error('  ✗ Invalid state machine:');
+    smValidation.errors.forEach(e => console.error(`    - ${e}`));
+    process.exit(1);
+  }
+  if (smValidation.warnings.length > 0) {
+    smValidation.warnings.forEach(w => console.log(`  ⚠ ${w}`));
+  }
+  console.log('  ✓ State machine valid');
+
+  // Package .lottie
+  const outputDir = ensureOutputDir();
+  const slug = slugify(prompt);
+  const timestamp = Math.floor(Date.now() / 1000);
+  const filename = options.output ?? `${slug}-${timestamp}.lottie`;
+  const outputPath = join(outputDir, filename);
+
+  await writeDotLottie(outputPath, {
+    animations: Object.entries(fixedAnimations).map(([id, data]) => ({ id, data })),
+    stateMachine: { id: 'state-machine', data: envelope.stateMachine },
+  });
+  console.log(`  ✓ Written to ${outputPath}`);
+
+  // Preview
+  if (options.preview) {
+    const buffer = readFileSync(outputPath);
+    const previewPath = await openDotLottiePreview(buffer);
+    console.log(`  ✓ Preview opened: ${previewPath}`);
+  }
+}
+
 program
   .command('preview <file>')
-  .description('Preview an existing Lottie JSON file in the browser')
+  .description('Preview a Lottie JSON or .lottie file in the browser')
   .action(async (file: string) => {
     try {
-      const raw = readFileSync(file, 'utf-8');
-      const json = JSON.parse(raw) as object;
-      const previewPath = await openPreview(json);
-      console.log(`Preview opened: ${previewPath}`);
+      if (file.endsWith('.lottie')) {
+        const buffer = readFileSync(file);
+        const previewPath = await openDotLottiePreview(buffer);
+        console.log(`Preview opened: ${previewPath}`);
+      } else {
+        const raw = readFileSync(file, 'utf-8');
+        const json = JSON.parse(raw) as object;
+        const previewPath = await openPreview(json);
+        console.log(`Preview opened: ${previewPath}`);
+      }
     } catch (err) {
       console.error(`Failed to preview: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
@@ -143,24 +221,56 @@ program
 
 program
   .command('validate <file>')
-  .description('Validate a Lottie JSON file')
+  .description('Validate a Lottie JSON or .lottie file')
   .action(async (file: string) => {
     try {
-      const raw = readFileSync(file, 'utf-8');
-      const json = JSON.parse(raw) as unknown;
-      const result = validateLottie(json);
+      if (file.endsWith('.lottie')) {
+        const { animations, stateMachine } = await readDotLottie(file);
+        const animationIds = Object.keys(animations);
+        let allValid = true;
 
-      if (result.valid) {
-        console.log(`✓ Valid Lottie JSON: ${file}`);
+        for (const [id, anim] of Object.entries(animations)) {
+          const result = validateLottie(anim);
+          if (result.valid) {
+            console.log(`✓ Animation "${id}": valid`);
+          } else {
+            console.log(`✗ Animation "${id}": invalid`);
+            result.errors.forEach(e => console.log(`  Error: ${e}`));
+            allValid = false;
+          }
+          result.warnings.forEach(w => console.log(`  Warning: ${w}`));
+        }
+
+        if (stateMachine) {
+          const smResult = validateStateMachine(stateMachine, animationIds);
+          if (smResult.valid) {
+            console.log('✓ State machine: valid');
+          } else {
+            console.log('✗ State machine: invalid');
+            smResult.errors.forEach(e => console.log(`  Error: ${e}`));
+            allValid = false;
+          }
+          smResult.warnings.forEach(w => console.log(`  Warning: ${w}`));
+        }
+
+        process.exit(allValid ? 0 : 1);
       } else {
-        console.log(`✗ Invalid Lottie JSON: ${file}`);
-        result.errors.forEach(e => console.log(`  Error: ${e}`));
-      }
-      if (result.warnings.length > 0) {
-        result.warnings.forEach(w => console.log(`  Warning: ${w}`));
-      }
+        const raw = readFileSync(file, 'utf-8');
+        const json = JSON.parse(raw) as unknown;
+        const result = validateLottie(json);
 
-      process.exit(result.valid ? 0 : 1);
+        if (result.valid) {
+          console.log(`✓ Valid Lottie JSON: ${file}`);
+        } else {
+          console.log(`✗ Invalid Lottie JSON: ${file}`);
+          result.errors.forEach(e => console.log(`  Error: ${e}`));
+        }
+        if (result.warnings.length > 0) {
+          result.warnings.forEach(w => console.log(`  Warning: ${w}`));
+        }
+
+        process.exit(result.valid ? 0 : 1);
+      }
     } catch (err) {
       console.error(`Failed to validate: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);

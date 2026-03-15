@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kin3o — Interactive Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  h1 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #888;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+  }
+  .badge {
+    display: inline-block;
+    background: #D97706;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  #canvas-container {
+    width: 512px;
+    height: 512px;
+    max-width: 90vw;
+    max-height: 90vw;
+    background: #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  button {
+    background: #333;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+  }
+  button:hover { background: #444; }
+  button.active { background: #D97706; color: #fff; border-color: #D97706; }
+  .state-display {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .state-chip {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: #333;
+    border: 1px solid #444;
+    color: #aaa;
+    transition: all 0.2s;
+  }
+  .state-chip.current {
+    background: #D97706;
+    border-color: #D97706;
+    color: #fff;
+    font-weight: 600;
+  }
+  .hint {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: #666;
+    text-align: center;
+    line-height: 1.6;
+  }
+  .meta {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: #555;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<h1>KIN3O</h1>
+<span class="badge">Interactive</span>
+<div id="canvas-container">
+  <canvas id="dotlottie-canvas" width="512" height="512"></canvas>
+</div>
+<div class="controls">
+  <button id="btn-play" class="active" onclick="togglePlay()">Pause</button>
+  <button id="btn-05x" onclick="setSpeed(0.5)">0.5x</button>
+  <button id="btn-1x" class="active" onclick="setSpeed(1)">1x</button>
+  <button id="btn-2x" onclick="setSpeed(2)">2x</button>
+</div>
+<div class="state-display" id="state-display"></div>
+<div class="hint" id="hint">Hover over or click the animation to trigger state transitions</div>
+<div class="meta" id="meta"></div>
+
+<script type="module">
+  import { DotLottie } from 'https://esm.sh/@lottiefiles/dotlottie-web@latest';
+
+  // Decode embedded .lottie data
+  const base64Data = '__DOTLOTTIE_DATA_BASE64__';
+  const binaryString = atob(base64Data);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  const canvas = document.getElementById('dotlottie-canvas');
+
+  const dotLottie = new DotLottie({
+    canvas,
+    data: bytes.buffer,
+    autoplay: true,
+    loop: true,
+  });
+
+  // Expose for button controls
+  window._dotLottie = dotLottie;
+  window._playing = true;
+  window._speed = 1;
+
+  // State display
+  const stateDisplay = document.getElementById('state-display');
+  const metaEl = document.getElementById('meta');
+
+  dotLottie.addEventListener('load', () => {
+    const manifest = dotLottie.manifest;
+    if (manifest && manifest.stateMachines && manifest.stateMachines.length > 0) {
+      // Start the state machine
+      const smId = manifest.stateMachines[0].id;
+      if (smId) {
+        dotLottie.loadStateMachine(smId);
+        dotLottie.startStateMachine();
+      }
+    }
+
+    // Show animation info
+    const animations = manifest?.animations || [];
+    metaEl.textContent = `${animations.length} animation${animations.length !== 1 ? 's' : ''} · 512×512px`;
+
+    // Build state chips from manifest
+    if (manifest?.stateMachines?.[0]) {
+      updateStateChips(manifest.stateMachines[0]);
+    }
+  });
+
+  function updateStateChips(sm) {
+    // We don't have direct access to the state machine descriptor from manifest
+    // but we can show animation names as proxy states
+    stateDisplay.innerHTML = '';
+    const animations = window._dotLottie.manifest?.animations || [];
+    for (const anim of animations) {
+      const chip = document.createElement('span');
+      chip.className = 'state-chip';
+      chip.textContent = anim.id || 'unknown';
+      chip.dataset.id = anim.id || '';
+      stateDisplay.appendChild(chip);
+    }
+
+    // Highlight first as current
+    if (stateDisplay.children.length > 0) {
+      stateDisplay.children[0].classList.add('current');
+    }
+  }
+
+  // Track active animation changes
+  dotLottie.addEventListener('render', () => {
+    const activeId = dotLottie.activeAnimationId;
+    if (activeId && stateDisplay.children.length > 0) {
+      for (const chip of stateDisplay.children) {
+        chip.classList.toggle('current', chip.dataset.id === activeId);
+      }
+    }
+  });
+
+  // Global controls
+  window.togglePlay = function() {
+    window._playing = !window._playing;
+    if (window._playing) { dotLottie.play(); } else { dotLottie.pause(); }
+    document.getElementById('btn-play').textContent = window._playing ? 'Pause' : 'Play';
+    document.getElementById('btn-play').classList.toggle('active', window._playing);
+  };
+
+  window.setSpeed = function(s) {
+    window._speed = s;
+    dotLottie.setSpeed(s);
+    document.getElementById('btn-05x').classList.toggle('active', s === 0.5);
+    document.getElementById('btn-1x').classList.toggle('active', s === 1);
+    document.getElementById('btn-2x').classList.toggle('active', s === 2);
+  };
+</script>
+</body>
+</html>
