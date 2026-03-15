@@ -20,17 +20,17 @@ Great tools like [LottieFiles](https://lottiefiles.com), [Lottielab](https://www
 
 kin3o takes a different approach: it's a CLI tool for developers who want to generate animations from their terminal using AI subscriptions they already pay for. No editor, no credits, no context switching — just describe what you want and get valid Lottie JSON.
 
-## How kin3o fits in
+## Choosing the right tool
 
-| | kin3o | Visual editors ([LottieFiles](https://lottiefiles.com), [Lottielab](https://www.lottielab.com), [Rive](https://rive.app)) |
-|--|-------|----------------|
-| **Best for** | Developers generating animations from code/terminal | Designers crafting polished animations visually |
-| **Workflow** | CLI — `kin3o generate "..."` | Visual editor with timeline, keyframes, drag & drop |
-| **AI model** | Your existing Claude/Codex subscription | Built-in (per-credit or subscription) |
-| **Output** | Lottie JSON + dotLottie state machines | Lottie, Rive (.riv), and more |
-| **Collaboration** | Git-native (JSON is diffable) | Real-time team editors |
-| **Animation library** | Compatible with [LottieFiles](https://lottiefiles.com) ecosystem | Built-in libraries (massive) |
-| **Open source** | Yes (MIT) | No |
+There are great tools for different animation workflows. Here's an honest look at where each shines:
+
+| Tool | Best for | Strengths |
+|------|----------|-----------|
+| **kin3o** | Developers who want animations from their terminal | CLI-first, uses your existing AI subscription, open source, git-friendly JSON output, interactive state machines from text |
+| [**Rive**](https://rive.app) | Complex interactive animations with a visual editor | Skeletal animation, mesh deformation, runtime inputs (cursor tracking, sliders), built-in state machines, beautiful visual editor |
+| [**LottieFiles**](https://lottiefiles.com) | Finding and sharing animations | Massive community library, Motion Copilot AI, After Effects integration, team collaboration |
+| [**Lottielab**](https://www.lottielab.com) | Designing Lottie animations visually | Polished editor with timeline and keyframes, team collaboration, export to Lottie JSON |
+| [**Recraft**](https://www.recraft.ai) | AI-powered design with animation export | Visual AI design tool, vector and animation output, broad creative capabilities |
 
 ## Quick Start
 
