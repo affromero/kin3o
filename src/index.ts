@@ -1,15 +1,14 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
-import { writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { Command } from 'commander';
 import { PROVIDERS, detectAvailableProviders, getDefaultProvider } from './providers/registry.js';
-import { buildSystemPrompt, buildInteractiveSystemPrompt, loadDesignTokens } from './prompts/index.js';
+import { buildSystemPrompt, buildInteractiveSystemPrompt, buildRefinementUserPrompt, buildInteractiveRefinementUserPrompt, loadDesignTokens } from './prompts/index.js';
 import { validateLottie, autoFix } from './validator.js';
 import { validateStateMachine } from './state-machine-validator.js';
 import { openPreview, openDotLottiePreview } from './preview.js';
 import { writeDotLottie, readDotLottie } from './packager.js';
-import { extractJson, extractInteractiveJson, slugify, ensureOutputDir } from './utils.js';
+import { extractJson, extractInteractiveJson, slugify, ensureOutputDir, nextVersionedPath } from './utils.js';
 
 const program = new Command();
 
@@ -184,6 +183,101 @@ async function handleInteractiveOutput(content: string, prompt: string, options:
     console.log(`  ✓ Preview opened: ${previewPath}`);
   }
 }
+
+program
+  .command('refine <file> <prompt>')
+  .description('Refine an existing Lottie animation with a follow-up instruction')
+  .option('-p, --provider <provider>', 'AI provider to use')
+  .option('-m, --model <model>', 'Model to use')
+  .option('-o, --output <path>', 'Output file path')
+  .option('--no-preview', 'Skip opening preview in browser')
+  .option('-t, --tokens <path>', 'Path to design tokens JSON (or "sotto" for built-in)')
+  .action(async (file: string, prompt: string, rawOptions: Omit<GenerateOptions, 'interactive'>) => {
+    const resolvedPath = resolve(file);
+
+    // 1. Validate input file
+    if (!existsSync(resolvedPath)) {
+      console.error(`  ✗ File not found: ${resolvedPath}`);
+      process.exit(1);
+    }
+
+    const isInteractive = file.endsWith('.lottie');
+    const mode = isInteractive ? 'interactive' : 'static';
+    console.log(`\nkin3o — Refining ${mode} animation...`);
+
+    // 2. Read current animation
+    let currentJson: string;
+    try {
+      if (isInteractive) {
+        const { animations, stateMachine } = await readDotLottie(resolvedPath);
+        currentJson = JSON.stringify({ animations, stateMachine }, null, 2);
+      } else {
+        currentJson = readFileSync(resolvedPath, 'utf-8');
+        JSON.parse(currentJson); // validate it's valid JSON
+      }
+    } catch (err) {
+      console.error(`  ✗ Failed to read input file: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+
+    // 3. Warn on large files
+    const sizeKb = Math.round(statSync(resolvedPath).size / 1024);
+    if (sizeKb > 500) {
+      console.log(`  ⚠ Large animation (${sizeKb}KB) — may hit provider token limits`);
+    }
+
+    // 4. Detect provider
+    let providerKey = rawOptions.provider;
+    if (!providerKey) {
+      providerKey = await getDefaultProvider() ?? undefined;
+      if (!providerKey) {
+        console.error('  ✗ No AI providers available. Install Claude Code, Codex, or set ANTHROPIC_API_KEY.');
+        process.exit(1);
+      }
+    }
+
+    const provider = PROVIDERS[providerKey];
+    if (!provider) {
+      console.error(`  ✗ Unknown provider "${providerKey}". Run "kin3o providers" to see available options.`);
+      process.exit(1);
+    }
+
+    const model = rawOptions.model ?? provider.defaultModel;
+    console.log(`  Provider: ${provider.displayName} (${model})`);
+    console.log(`  Refining: ${file}`);
+    console.log(`  Instruction: "${prompt}"\n`);
+
+    // 5. Build prompts
+    const tokens = rawOptions.tokens ? loadDesignTokens(rawOptions.tokens) : undefined;
+    const systemPrompt = isInteractive
+      ? buildInteractiveSystemPrompt(tokens)
+      : buildSystemPrompt(tokens);
+    const userPrompt = isInteractive
+      ? buildInteractiveRefinementUserPrompt(currentJson, prompt)
+      : buildRefinementUserPrompt(currentJson, prompt);
+
+    // 6. Generate refined output
+    try {
+      const result = await provider.generate(model, systemPrompt, userPrompt);
+      console.log(`  ✓ Refined in ${(result.durationMs / 1000).toFixed(1)}s`);
+
+      // 7. Compute output path
+      const outputDir = ensureOutputDir();
+      const outputFile = rawOptions.output ?? nextVersionedPath(resolvedPath, outputDir);
+      const options: GenerateOptions = { ...rawOptions, interactive: isInteractive, output: outputFile };
+
+      if (isInteractive) {
+        await handleInteractiveOutput(result.content, prompt, options);
+      } else {
+        await handleStaticOutput(result.content, prompt, options);
+      }
+
+      console.log('');
+    } catch (err) {
+      console.error(`  ✗ Refinement failed: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+  });
 
 program
   .command('preview <file>')
