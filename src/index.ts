@@ -9,6 +9,8 @@ import { validateStateMachine } from './state-machine-validator.js';
 import { openPreview, openDotLottiePreview } from './preview.js';
 import { writeDotLottie, readDotLottie } from './packager.js';
 import { extractJson, extractInteractiveJson, slugify, ensureOutputDir, nextVersionedPath } from './utils.js';
+import { searchAnimations, featuredAnimations, popularAnimations, recentAnimations, resolveTarget } from './marketplace.js';
+import { openSearchResults } from './marketplace-preview.js';
 
 const program = new Command();
 
@@ -368,6 +370,179 @@ program
       }
     } catch (err) {
       console.error(`Failed to validate: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+  });
+
+// --- Marketplace commands ---
+
+interface SearchOptions {
+  featured: boolean;
+  popular: boolean;
+  recent: boolean;
+  limit: string;
+  browser: boolean;
+}
+
+program
+  .command('search [query]')
+  .description('Search LottieFiles marketplace for animations')
+  .option('--featured', 'Show featured animations', false)
+  .option('--popular', 'Show popular animations', false)
+  .option('--recent', 'Show recent animations', false)
+  .option('--limit <n>', 'Number of results', '20')
+  .option('--no-browser', 'Print results to terminal instead')
+  .action(async (query: string | undefined, options: SearchOptions) => {
+    const limit = parseInt(options.limit, 10) || 20;
+    const isBrowse = options.featured || options.popular || options.recent;
+
+    if (!query && !isBrowse) {
+      console.error('  ✗ Provide a search query or use --featured, --popular, or --recent');
+      process.exit(1);
+    }
+
+    console.log('\nkin3o — Searching LottieFiles...');
+
+    try {
+      let result;
+      let mode: 'search' | 'featured' | 'popular' | 'recent';
+
+      if (options.featured) {
+        mode = 'featured';
+        result = await featuredAnimations(limit);
+      } else if (options.popular) {
+        mode = 'popular';
+        result = await popularAnimations(limit);
+      } else if (options.recent) {
+        mode = 'recent';
+        result = await recentAnimations(limit);
+      } else {
+        mode = 'search';
+        result = await searchAnimations(query!, { first: limit });
+      }
+
+      console.log(`  ✓ Found ${result.totalCount} animations${query ? ` for "${query}"` : ''}`);
+
+      if (result.animations.length === 0) {
+        console.log('  No results found.\n');
+        return;
+      }
+
+      if (!options.browser) {
+        // Terminal table output
+        console.log('');
+        const header = '  Name                              Author          UUID             Likes  Downloads';
+        console.log(header);
+        console.log('  ' + '─'.repeat(header.length - 2));
+
+        for (const anim of result.animations) {
+          const name = (anim.name || '').slice(0, 32).padEnd(34);
+          const author = (anim.createdBy?.username || 'Unknown').slice(0, 14).padEnd(16);
+          const uuid = anim.uuid.slice(0, 14).padEnd(17);
+          const likes = String(anim.likesCount).padStart(5);
+          const dl = String(anim.downloads ?? 0).padStart(10);
+          console.log(`  ${name}${author}${uuid}${likes}${dl}`);
+        }
+
+        console.log('');
+      } else {
+        const previewPath = await openSearchResults(result.animations, {
+          query: query || '',
+          totalCount: result.totalCount,
+          mode,
+        });
+        console.log(`  ✓ Results opened in browser: ${previewPath}`);
+      }
+
+      console.log('  Tip: Run "kin3o download <uuid>" to save an animation to output/\n');
+    } catch (err) {
+      console.error(`  ✗ Search failed: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+  });
+
+interface DownloadOptions {
+  output?: string;
+  preview: boolean;
+  lottie: boolean;
+}
+
+program
+  .command('download <target>')
+  .description('Download an animation from LottieFiles (UUID, URL, or CDN link)')
+  .option('-o, --output <path>', 'Output file path')
+  .option('--no-preview', 'Skip preview')
+  .option('--lottie', 'Download .lottie format instead of .json', false)
+  .action(async (target: string, options: DownloadOptions) => {
+    console.log('\nkin3o — Downloading from LottieFiles...');
+
+    try {
+      const resolved = await resolveTarget(target, options.lottie);
+
+      if (options.lottie && resolved.lottieBuffer) {
+        const outputDir = ensureOutputDir();
+        const slug = resolved.meta ? slugify(resolved.meta.name) : 'animation';
+        const timestamp = Math.floor(Date.now() / 1000);
+        const outputPath = options.output
+          ? join(outputDir, options.output)
+          : join(outputDir, `${slug}-${timestamp}.lottie`);
+
+        writeFileSync(outputPath, resolved.lottieBuffer);
+
+        if (resolved.meta) {
+          console.log(`  ✓ Downloaded: ${resolved.meta.name} by ${resolved.meta.createdBy?.username ?? 'Unknown'}`);
+        }
+        console.log(`  ✓ Written to ${outputPath}`);
+
+        if (options.preview) {
+          const previewPath = await openDotLottiePreview(resolved.lottieBuffer);
+          console.log(`  ✓ Preview opened: ${previewPath}`);
+        }
+
+        console.log(`  Tip: Run "kin3o refine ${outputPath} 'your instruction'" to modify\n`);
+        return;
+      }
+
+      // JSON download
+      const lottieJson = resolved.json;
+
+      const validation = validateLottie(lottieJson);
+      if (!validation.valid) {
+        console.error('  ⚠ Downloaded Lottie has validation errors:');
+        validation.errors.forEach(e => console.error(`    - ${e}`));
+      }
+
+      let finalJson = lottieJson;
+      if (validation.warnings.length > 0) {
+        finalJson = autoFix(lottieJson) as object;
+        const fixes = validation.warnings.length;
+        console.log(`  ✓ Valid Lottie JSON (${fixes} auto-fix${fixes > 1 ? 'es' : ''}: ${validation.warnings.join(', ')})`);
+      } else if (validation.valid) {
+        console.log('  ✓ Valid Lottie JSON');
+      }
+
+      const outputDir = ensureOutputDir();
+      const slug = resolved.meta ? slugify(resolved.meta.name) : 'animation';
+      const timestamp = Math.floor(Date.now() / 1000);
+      const outputPath = options.output
+        ? join(outputDir, options.output)
+        : join(outputDir, `${slug}-${timestamp}.json`);
+
+      writeFileSync(outputPath, JSON.stringify(finalJson, null, 2), 'utf-8');
+
+      if (resolved.meta) {
+        console.log(`  ✓ Downloaded: ${resolved.meta.name} by ${resolved.meta.createdBy?.username ?? 'Unknown'}`);
+      }
+      console.log(`  ✓ Written to ${outputPath}`);
+
+      if (options.preview) {
+        const previewPath = await openPreview(finalJson);
+        console.log(`  ✓ Preview opened: ${previewPath}`);
+      }
+
+      console.log(`  Tip: Run "kin3o refine ${outputPath} 'your instruction'" to modify\n`);
+    } catch (err) {
+      console.error(`  ✗ Download failed: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
   });
