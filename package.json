@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
+    "@dotlottie/dotlottie-js": "^1.6.3",
     "commander": "^13.0.0",
     "open": "^10.1.0"
   },

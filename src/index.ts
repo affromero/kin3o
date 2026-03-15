@@ -22,6 +22,7 @@ interface GenerateOptions {
   output?: string;
   preview: boolean;
   tokens?: string;
+  interactive: boolean;
 }
 
 program
@@ -32,6 +33,7 @@ program
   .option('-o, --output <path>', 'Output file path')
   .option('--no-preview', 'Skip opening preview in browser')
   .option('-t, --tokens <path>', 'Path to design tokens JSON (or "sotto" for built-in)')
+  .option('-i, --interactive', 'Generate interactive state machine (.lottie output)', false)
   .action(async (prompt: string, options: GenerateOptions) => {
     console.log('\nkin3o — Generating animation...');
 
