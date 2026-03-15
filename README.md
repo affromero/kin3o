@@ -10,21 +10,21 @@ Every motion design tool (Rive, LottieFiles, Hera) sandboxes its AI inside a wal
 
 ## Competitors
 
-| Feature | **kin3o** | **LottieFiles** | **LottieGen** | **Recraft** | **Lottielab** |
+| Feature | **kin3o** | [LottieFiles](https://lottiefiles.com) | [LottieGen](https://lottiegenai.webflow.io/) | [Recraft](https://www.recraft.ai) | [Lottielab](https://www.lottielab.com) |
 |---------|-----------|-----------------|---------------|-------------|---------------|
-| Text → Lottie JSON | Yes | Yes (Motion Copilot) | Yes | Yes (via export) | No |
-| CLI | Yes | No | No | No | No |
-| Web editor | No | Yes | Yes | Yes | Yes |
-| Open source | Yes | No | No | No | No |
-| Uses your own AI sub | Yes | No | No | No | No |
-| Custom design tokens | Yes | No | No | No | No |
-| Animation library | No | Yes (massive) | No | Yes | Yes |
-| State machines | No | Yes | No | No | Yes |
-| Team collaboration | No | Yes | No | Yes | Yes |
-| API access | No | Yes | No | Yes | Yes |
-| **Price** | **Free (OSS)** | **Free / $19.99+/mo** | **Waitlist (TBD)** | **Free (50/day) / $10+/mo** | **Free / up to $99/mo** |
+| Text → Lottie JSON | **Yes** | Yes (Motion Copilot) | Yes | Yes (via export) | No |
+| CLI | **Yes** | No | No | No | No |
+| Web editor | **CLI-first** | Yes | Yes | Yes | Yes |
+| Open source | **Yes** | No | No | No | No |
+| Uses your own AI sub | **Yes** | No | No | No | No |
+| Custom design tokens | **Yes** | No | No | No | No |
+| Animation library | **Compatible with [LottieFiles](https://lottiefiles.com)** | Yes (massive) | No | Yes | Yes |
+| State machines | **Not yet** | Yes | No | No | Yes |
+| Team collaboration | **Git-native** | Yes | No | Yes | Yes |
+| Programmatic access | **Yes (CLI + stdout)** | Yes (REST API) | No | Yes (REST API) | Yes (REST API) |
+| **Price** | **Free (OSS)** | Free / $19.99+/mo | Waitlist (TBD) | Free (50/day) / $10+/mo | Free / up to $99/mo |
 
-> Sources: [LottieFiles](https://lottiefiles.com/pricing) · [LottieGen](https://lottiegenai.webflow.io/) · [Recraft](https://www.recraft.ai/pricing) · [Lottielab](https://www.lottielab.com/pricing) — prices as of March 2025.
+> Prices as of March 2025.
 
 ## Quick Start
 
