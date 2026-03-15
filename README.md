@@ -33,7 +33,7 @@ Every motion design tool (Rive, LottieFiles, Hera) sandboxes its AI inside a wal
 | Programmatic access | **Yes (CLI + stdout)** | Yes (REST API) | No | Yes (REST API) | Yes (REST API) |
 | **Price** | **Free (OSS)** | Free / $19.99+/mo | Waitlist (TBD) | Free (50/day) / $10+/mo | Free / up to $99/mo |
 
-> Prices as of March 2025.
+> Prices as of March 2026.
 
 ## Quick Start
 
