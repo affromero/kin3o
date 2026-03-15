@@ -537,6 +537,12 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   color:var(--text-3);letter-spacing:.04em;
   margin-bottom:.75rem;
 }
+.sm-prompt{
+  font-family:var(--mono);font-size:.65rem;
+  color:var(--text-3);letter-spacing:.02em;
+  margin-top:.75rem;
+  text-align:center;
+}
 .sm-states{
   display:flex;gap:.5rem;
 }
@@ -931,7 +937,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
         </div>
       </div>
       <div class="sm-preview">
-        <div class="sm-hint">Try it &mdash; hover and click</div>
+        <div class="sm-prompt"><span class="tp">$</span> kin3o generate <span class="ts">"button that glows on hover and shrinks on press"</span> --interactive</div>
         <div class="sm-anim-wrap" id="sm-wrap">
           <div class="sm-anim-layer active" id="sm-idle"></div>
           <div class="sm-anim-layer" id="sm-hover"></div>
@@ -942,14 +948,14 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
           <span class="sm-state" data-state="hover">hover</span>
           <span class="sm-state" data-state="pressed">pressed</span>
         </div>
-        <div class="sm-hint" style="margin-top:2.5rem">Another example &mdash; hover and press</div>
+        <div class="sm-prompt" style="margin-top:2.5rem"><span class="tp">$</span> kin3o generate <span class="ts">"human stick figure that walks on hover and runs on press"</span> --interactive</div>
         <div class="sm-anim-wrap" id="sf-wrap">
-          <div class="sm-anim-layer" id="sf-idle"></div>
+          <div class="sm-anim-layer active" id="sf-idle"></div>
           <div class="sm-anim-layer" id="sf-walk"></div>
           <div class="sm-anim-layer" id="sf-run"></div>
         </div>
         <div class="sm-states" id="sf-states">
-          <span class="sm-state" data-state="idle">standing</span>
+          <span class="sm-state on" data-state="idle">standing</span>
           <span class="sm-state" data-state="walk">walking</span>
           <span class="sm-state" data-state="run">running</span>
         </div>
@@ -1147,14 +1153,14 @@ L('sf-run',SF(40,35,30,8,12));
 var sfWrap=document.getElementById('sf-wrap');
 var sfLayers=sfWrap.querySelectorAll('.sm-anim-layer');
 var sfChips=document.querySelectorAll('#sf-states .sm-state');
-var sfCur=null;
+var sfCur='idle';
 function sfTr(state){
   if(state===sfCur)return;sfCur=state;
   var map={idle:0,walk:1,run:2};
   sfLayers.forEach(function(l,i){l.classList.toggle('active',i===map[state])});
   sfChips.forEach(function(c){c.classList.toggle('on',c.dataset.state===state)});
 }
-sfWrap.addEventListener('mouseenter',function(){sfTr(sfCur?'walk':'idle')});
+sfWrap.addEventListener('mouseenter',function(){sfTr('walk')});
 sfWrap.addEventListener('mouseleave',function(){sfTr('idle')});
 sfWrap.addEventListener('mousedown',function(){sfTr('run')});
 sfWrap.addEventListener('mouseup',function(){sfTr('walk')});
