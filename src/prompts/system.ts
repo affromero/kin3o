@@ -1,14 +1,7 @@
 import type { DesignTokens } from './tokens.js';
 import { PULSING_CIRCLE, WAVEFORM_BARS } from './examples.js';
 
-export function buildSystemPrompt(tokens?: DesignTokens): string {
-  const sections: string[] = [];
-
-  // 1. Role + output rules
-  sections.push(`You are a Lottie animation generator. Output ONLY valid JSON. No markdown fences, no explanation, no commentary. Your output must be directly parseable by JSON.parse().`);
-
-  // 2. Lottie format spec
-  sections.push(`
+export const LOTTIE_FORMAT_REFERENCE = `
 LOTTIE FORMAT REFERENCE:
 
 Top-level required fields:
@@ -64,7 +57,16 @@ Shape types:
 - "tr": group transform — same fields as layer transform "ks"
 - "tm": trim path — "s" (start%, scalar), "e" (end%, scalar), "o" (offset, scalar)
 
-CRITICAL: Groups MUST have "tr" (transform) as the LAST item in their "it" array.`);
+CRITICAL: Groups MUST have "tr" (transform) as the LAST item in their "it" array.`;
+
+export function buildSystemPrompt(tokens?: DesignTokens): string {
+  const sections: string[] = [];
+
+  // 1. Role + output rules
+  sections.push(`You are a Lottie animation generator. Output ONLY valid JSON. No markdown fences, no explanation, no commentary. Your output must be directly parseable by JSON.parse().`);
+
+  // 2. Lottie format spec
+  sections.push(LOTTIE_FORMAT_REFERENCE);
 
   // 3. Design rules
   sections.push(`

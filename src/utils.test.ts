@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { extractJson, hexToLottieColor, slugify } from './utils.js';
+import { extractJson, extractInteractiveJson, hexToLottieColor, slugify } from './utils.js';
 
 describe('extractJson', () => {
   it('extracts raw JSON', () => {
@@ -27,6 +27,51 @@ describe('extractJson', () => {
 
   it('throws on malformed JSON', () => {
     assert.throws(() => extractJson('{broken: json}'));
+  });
+});
+
+describe('extractInteractiveJson', () => {
+  const validEnvelope = JSON.stringify({
+    animations: {
+      idle: { v: '5.5.2', fr: 60, ip: 0, op: 120, w: 512, h: 512, layers: [] },
+    },
+    stateMachine: {
+      initial: 'idle',
+      states: [{ name: 'idle', type: 'PlaybackState', animation: 'idle' }],
+      interactions: [],
+      inputs: [],
+    },
+  });
+
+  it('extracts valid envelope', () => {
+    const result = extractInteractiveJson(validEnvelope);
+    assert.ok('idle' in result.animations);
+    assert.strictEqual(result.stateMachine.initial, 'idle');
+  });
+
+  it('extracts from markdown fences', () => {
+    const result = extractInteractiveJson('```json\n' + validEnvelope + '\n```');
+    assert.ok('idle' in result.animations);
+  });
+
+  it('throws on missing animations', () => {
+    const bad = JSON.stringify({ stateMachine: { initial: 'a', states: [] } });
+    assert.throws(() => extractInteractiveJson(bad), /animations/);
+  });
+
+  it('throws on empty animations', () => {
+    const bad = JSON.stringify({ animations: {}, stateMachine: { initial: 'a', states: [] } });
+    assert.throws(() => extractInteractiveJson(bad), /empty/);
+  });
+
+  it('throws on missing stateMachine', () => {
+    const bad = JSON.stringify({ animations: { a: { v: '5.5.2' } } });
+    assert.throws(() => extractInteractiveJson(bad), /stateMachine/);
+  });
+
+  it('throws on missing initial in stateMachine', () => {
+    const bad = JSON.stringify({ animations: { a: { v: '5.5.2' } }, stateMachine: { states: [] } });
+    assert.throws(() => extractInteractiveJson(bad), /initial/);
   });
 });
 

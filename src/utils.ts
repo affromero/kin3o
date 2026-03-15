@@ -27,6 +27,54 @@ export function extractJson(raw: string): string {
   return jsonStr;
 }
 
+export interface InteractiveEnvelope {
+  animations: Record<string, object>;
+  stateMachine: {
+    initial: string;
+    states: unknown[];
+    [key: string]: unknown;
+  };
+}
+
+/** Extract an interactive envelope JSON (animations + stateMachine) from LLM output */
+export function extractInteractiveJson(raw: string): InteractiveEnvelope {
+  const jsonStr = extractJson(raw);
+  const parsed = JSON.parse(jsonStr) as Record<string, unknown>;
+
+  if (typeof parsed['animations'] !== 'object' || parsed['animations'] === null || Array.isArray(parsed['animations'])) {
+    throw new Error('Interactive envelope missing "animations" object');
+  }
+
+  const animations = parsed['animations'] as Record<string, unknown>;
+  const animKeys = Object.keys(animations);
+  if (animKeys.length === 0) {
+    throw new Error('Interactive envelope "animations" is empty');
+  }
+
+  for (const key of animKeys) {
+    if (typeof animations[key] !== 'object' || animations[key] === null) {
+      throw new Error(`Animation "${key}" is not a valid object`);
+    }
+  }
+
+  if (typeof parsed['stateMachine'] !== 'object' || parsed['stateMachine'] === null || Array.isArray(parsed['stateMachine'])) {
+    throw new Error('Interactive envelope missing "stateMachine" object');
+  }
+
+  const sm = parsed['stateMachine'] as Record<string, unknown>;
+  if (typeof sm['initial'] !== 'string') {
+    throw new Error('State machine missing "initial" string');
+  }
+  if (!Array.isArray(sm['states'])) {
+    throw new Error('State machine missing "states" array');
+  }
+
+  return {
+    animations: animations as Record<string, object>,
+    stateMachine: sm as InteractiveEnvelope['stateMachine'],
+  };
+}
+
 /** Convert hex color string to Lottie [r, g, b, 1] array (0-1 floats) */
 export function hexToLottieColor(hex: string): [number, number, number, number] {
   let h = hex.replace(/^#/, '');
