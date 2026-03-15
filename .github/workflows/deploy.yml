@@ -1,0 +1,102 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_status: ${{ steps.deploy.outcome }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Deploy via SSH
+        id: deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          envs: REPO_TOKEN
+          script: |
+            set -e
+            cd ~/kin3o
+
+            echo "Pulling latest code..."
+            git remote set-url origin "https://x-access-token:${REPO_TOKEN}@github.com/affromero/kin3o.git"
+            git checkout -- .
+            git clean -fd
+            git pull origin main
+
+            echo "Syncing Caddy config..."
+            sudo cp ~/kin3o/Caddyfile /etc/caddy/conf.d/kin3o.com
+            sudo caddy reload --config /etc/caddy/Caddyfile --force
+
+            echo "Deploy complete!"
+        env:
+          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+  notify:
+    name: Telegram Notification
+    needs: deploy
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Notify via Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DEPLOY_STATUS: ${{ needs.deploy.outputs.deploy_status || needs.deploy.result }}
+        run: |
+          COMMIT_MSG=$(git log -1 --format='%s')
+          COMMIT_SHA=$(git log -1 --format='%h')
+          PREV_SHA=$(git log -1 --format='%h' HEAD~1)
+          AUTHOR=$(git log -1 --format='%an')
+
+          if [ "$DEPLOY_STATUS" = "success" ]; then
+            EMOJI="✅"
+            STATUS="deployed"
+          else
+            EMOJI="❌"
+            STATUS="deploy failed"
+          fi
+
+          HEALTH_LINE=""
+          if [ "$DEPLOY_STATUS" = "success" ]; then
+            HEALTH=$(curl -sf --max-time 5 "https://kin3o.com" 2>/dev/null || echo "")
+            if [ -n "$HEALTH" ]; then
+              HEALTH_LINE="Health: ✅ live"
+            else
+              HEALTH_LINE="Health: ⚠️ unreachable"
+            fi
+          fi
+
+          NL=$'\n'
+          TEXT="${EMOJI} <b>kin3o.com ${STATUS}</b>${NL}"
+          TEXT="${TEXT}<code>${PREV_SHA}</code> → <code>${COMMIT_SHA}</code>  <i>${COMMIT_MSG}</i>${NL}"
+          TEXT="${TEXT}by ${AUTHOR}"
+
+          [ -n "$HEALTH_LINE" ] && TEXT="${TEXT}${NL}${NL}<blockquote>${HEALTH_LINE}</blockquote>"
+
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          TEXT="${TEXT}${NL}<a href=\"https://kin3o.com\">kin3o.com</a>  ·  <a href=\"${RUN_URL}\">Run</a>"
+
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg chat_id "$TELEGRAM_CHAT_ID" --arg text "$TEXT" \
+              '{chat_id: $chat_id, text: $text, parse_mode: "HTML", disable_web_page_preview: true}')"
