@@ -3,7 +3,7 @@ www.kin3o.com {
 }
 
 kin3o.com {
-	root * /home/afromero/kin3o/landing
+	root * /home/sotto/kin3o/landing
 	file_server
 
 	header {
