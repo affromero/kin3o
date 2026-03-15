@@ -563,10 +563,10 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
 .cmp-header{margin-bottom:3rem}
 .cmp-header p{color:var(--text-3);max-width:480px;margin-top:.5rem}
 
-/* Fix 11: Split decision card */
+/* Decision card */
 .cmp-split{
   display:grid;
-  grid-template-columns:1.1fr .9fr;
+  grid-template-columns:1fr 1fr;
   gap:1px;
   background:var(--line);
   border-radius:24px;
@@ -606,6 +606,26 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
 }
 .cmp-icon-info{
   background:rgba(125,162,255,.10);color:var(--cool);
+}
+
+.cmp-tools{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  background:var(--line);border-radius:14px;overflow:hidden;
+  margin-top:.25rem;
+}
+.cmp-tool{
+  background:var(--raised);padding:1.25rem 1.15rem;
+  text-decoration:none;transition:background .2s;
+}
+.cmp-tool:hover{background:rgba(255,255,255,.03)}
+.cmp-tool-name{
+  font-family:var(--sans);font-size:.85rem;font-weight:600;
+  color:var(--text-1);margin-bottom:.35rem;
+  display:flex;align-items:center;gap:.4rem;
+}
+.cmp-tool-name .arrow{font-size:.65rem;color:var(--cool);opacity:.6}
+.cmp-tool-desc{
+  font-size:.75rem;color:var(--text-3);line-height:1.5;
 }
 
 /* ── End (Fix 12) ── */
@@ -920,12 +940,24 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
       </div>
       <div class="cmp-panel">
         <div class="cmp-panel-title">You might also love</div>
-        <ul class="cmp-list">
-          <li><span class="cmp-icon cmp-icon-info">&#8599;</span> <a href="https://rive.app" style="color:var(--text-2)">Rive</a> &mdash; visual editor with skeletal animation, mesh deformation, and runtime inputs</li>
-          <li><span class="cmp-icon cmp-icon-info">&#8599;</span> <a href="https://lottiefiles.com" style="color:var(--text-2)">LottieFiles</a> &mdash; massive animation library, community, and Motion Copilot AI</li>
-          <li><span class="cmp-icon cmp-icon-info">&#8599;</span> <a href="https://www.lottielab.com" style="color:var(--text-2)">Lottielab</a> &mdash; polished visual Lottie editor with team collaboration</li>
-          <li><span class="cmp-icon cmp-icon-info">&#8599;</span> <a href="https://www.recraft.ai" style="color:var(--text-2)">Recraft</a> &mdash; AI-powered design tool with animation export</li>
-        </ul>
+        <div class="cmp-tools">
+          <a class="cmp-tool" href="https://rive.app">
+            <div class="cmp-tool-name">Rive <span class="arrow">&#8599;</span></div>
+            <div class="cmp-tool-desc">Visual editor, skeletal animation, mesh deformation, runtime inputs</div>
+          </a>
+          <a class="cmp-tool" href="https://lottiefiles.com">
+            <div class="cmp-tool-name">LottieFiles <span class="arrow">&#8599;</span></div>
+            <div class="cmp-tool-desc">Massive animation library, community, Motion Copilot AI</div>
+          </a>
+          <a class="cmp-tool" href="https://www.lottielab.com">
+            <div class="cmp-tool-name">Lottielab <span class="arrow">&#8599;</span></div>
+            <div class="cmp-tool-desc">Polished visual Lottie editor with team collaboration</div>
+          </a>
+          <a class="cmp-tool" href="https://www.recraft.ai">
+            <div class="cmp-tool-name">Recraft <span class="arrow">&#8599;</span></div>
+            <div class="cmp-tool-desc">AI design tool with animation export</div>
+          </a>
+        </div>
       </div>
     </div>
   </div>
