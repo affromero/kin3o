@@ -507,7 +507,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
 }
 
 .sm-anim-wrap{
-  width:180px;height:180px;
+  width:220px;height:220px;
   border-radius:24px;
   background:
     radial-gradient(circle at 50% 45%, rgba(214,179,106,.14), transparent 50%),
@@ -515,9 +515,22 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   border:1px solid rgba(255,255,255,.06);
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 16px 48px rgba(0,0,0,.25);
+  position:relative;
+  cursor:pointer;
 }
-.sm-anim-inner{width:120px;height:120px}
+.sm-anim-layer{
+  position:absolute;
+  width:160px;height:160px;
+  opacity:0;
+  transition:opacity .2s ease;
+}
+.sm-anim-layer.active{opacity:1}
 
+.sm-hint{
+  font-family:var(--mono);font-size:.65rem;
+  color:var(--text-3);letter-spacing:.04em;
+  margin-bottom:.75rem;
+}
 .sm-states{
   display:flex;gap:.5rem;
 }
@@ -864,13 +877,16 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
         </div>
       </div>
       <div class="sm-preview">
-        <div class="sm-anim-wrap">
-          <div class="sm-anim-inner" id="sm-mascot"></div>
+        <div class="sm-hint">Try it &mdash; hover and click</div>
+        <div class="sm-anim-wrap" id="sm-wrap">
+          <div class="sm-anim-layer active" id="sm-idle"></div>
+          <div class="sm-anim-layer" id="sm-hover"></div>
+          <div class="sm-anim-layer" id="sm-pressed"></div>
         </div>
         <div class="sm-states">
-          <span class="sm-state on">idle</span>
-          <span class="sm-state">hover</span>
-          <span class="sm-state">pressed</span>
+          <span class="sm-state on" data-state="idle">idle</span>
+          <span class="sm-state" data-state="hover">hover</span>
+          <span class="sm-state" data-state="pressed">pressed</span>
         </div>
       </div>
     </div>
@@ -936,7 +952,13 @@ const P={"v":"5.5.2","fr":60,"ip":0,"op":180,"w":512,"h":512,"ddd":0,"assets":[]
 const M={"v":"5.5.2","fr":60,"ip":0,"op":120,"w":512,"h":512,"ddd":0,"assets":[],"layers":[{"ty":4,"ind":0,"nm":"Orb","ip":0,"op":120,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[256,256]},"s":{"a":1,"k":[{"t":0,"s":[100,100],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[100,100]}]},"r":{"a":0,"k":0},"o":{"a":1,"k":[{"t":0,"s":[80],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[80]}]}},"shapes":[{"ty":"gr","nm":"Circle","it":[{"ty":"el","nm":"Ellipse","p":{"a":0,"k":[0,0]},"s":{"a":0,"k":[80,80]}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[0.839,0.722,0.416,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0},{"ty":4,"ind":1,"nm":"Arcs","ip":0,"op":120,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[256,256]},"s":{"a":1,"k":[{"t":0,"s":[95,95],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[95,95]}]},"r":{"a":1,"k":[{"t":0,"s":[0],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[0]}]},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Arc r70","it":[{"ty":"sh","nm":"Arc Path","ks":{"a":0,"k":{"c":false,"v":[[-70,0],[0,-70],[70,0]],"i":[[0,0],[-38.64,0],[0,0]],"o":[[0,-38.64],[38.64,0],[0,0]]}}},{"ty":"st","nm":"Stroke","c":{"a":0,"k":[0.839,0.722,0.416,1]},"o":{"a":0,"k":70},"w":{"a":0,"k":4},"lc":2,"lj":2},{"ty":"tm","nm":"Trim","s":{"a":0,"k":0},"e":{"a":1,"k":[{"t":0,"s":[0],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":40,"s":[100]}]},"o":{"a":0,"k":0}},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":-90},"o":{"a":0,"k":100}}]},{"ty":"gr","nm":"Arc r95","it":[{"ty":"sh","nm":"Arc Path","ks":{"a":0,"k":{"c":false,"v":[[-95,0],[0,-95],[95,0]],"i":[[0,0],[-52.44,0],[0,0]],"o":[[0,-52.44],[52.44,0],[0,0]]}}},{"ty":"st","nm":"Stroke","c":{"a":0,"k":[0.839,0.722,0.416,1]},"o":{"a":0,"k":50},"w":{"a":0,"k":3},"lc":2,"lj":2},{"ty":"tm","nm":"Trim","s":{"a":0,"k":0},"e":{"a":1,"k":[{"t":10,"s":[0],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":50,"s":[100]}]},"o":{"a":0,"k":0}},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":-90},"o":{"a":0,"k":100}}]},{"ty":"gr","nm":"Arc r120","it":[{"ty":"sh","nm":"Arc Path","ks":{"a":0,"k":{"c":false,"v":[[-120,0],[0,-120],[120,0]],"i":[[0,0],[-66.24,0],[0,0]],"o":[[0,-66.24],[66.24,0],[0,0]]}}},{"ty":"st","nm":"Stroke","c":{"a":0,"k":[0.839,0.722,0.416,1]},"o":{"a":0,"k":30},"w":{"a":0,"k":2},"lc":2,"lj":2},{"ty":"tm","nm":"Trim","s":{"a":0,"k":0},"e":{"a":1,"k":[{"t":20,"s":[0],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":60,"s":[100]}]},"o":{"a":0,"k":0}},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":-90},"o":{"a":0,"k":100}}]}],"bm":0}]};
 
 function L(id,d){lottie.loadAnimation({container:document.getElementById(id),renderer:'svg',loop:!0,autoplay:!0,animationData:JSON.parse(JSON.stringify(d))})}
-L('hero-anim',W);L('c0',W);L('c1',B);L('c2',P);L('logo-mascot',M);L('sm-mascot',M);
+L('hero-anim',W);L('c0',W);L('c1',B);L('c2',P);L('logo-mascot',M);
+
+// Interactive button state machine demo
+const SM_IDLE={"v":"5.5.2","fr":60,"w":512,"h":512,"ddd":0,"assets":[],"ip":0,"op":120,"layers":[{"ty":4,"ind":0,"nm":"Button","ip":0,"op":120,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[256,256]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Button Shape","it":[{"ty":"rc","nm":"Rect","p":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,80]},"r":{"a":0,"k":20}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[0.851,0.467,0.024,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0}]};
+const SM_HOVER={"v":"5.5.2","fr":60,"w":512,"h":512,"ddd":0,"assets":[],"ip":0,"op":60,"layers":[{"ty":4,"ind":0,"nm":"Button","ip":0,"op":60,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[256,256]},"s":{"a":1,"k":[{"t":0,"s":[100,100],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":30,"s":[108,108]}]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Button Shape","it":[{"ty":"rc","nm":"Rect","p":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,80]},"r":{"a":0,"k":20}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[0.937,0.553,0.098,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0}]};
+const SM_PRESSED={"v":"5.5.2","fr":60,"w":512,"h":512,"ddd":0,"assets":[],"ip":0,"op":30,"layers":[{"ty":4,"ind":0,"nm":"Button","ip":0,"op":30,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[256,256]},"s":{"a":1,"k":[{"t":0,"s":[108,108],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":15,"s":[95,95]}]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Button Shape","it":[{"ty":"rc","nm":"Rect","p":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,80]},"r":{"a":0,"k":20}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[0.725,0.376,0.016,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0}]};
+L('sm-idle',SM_IDLE);L('sm-hover',SM_HOVER);L('sm-pressed',SM_PRESSED);
 
 // Carousel (preserved logic, updated selectors for new layout)
 let cur=0,timer,prog;const DUR=6000,INT=30,N=3;
@@ -958,16 +980,24 @@ const cw=document.getElementById('carousel');
 cw.addEventListener('mouseenter',()=>{clearInterval(prog);clearTimeout(timer)});
 cw.addEventListener('mouseleave',reset);
 
-// State machine chip interaction
+// State machine — swap animations on hover/click (like Rive)
 (function(){
-  const wrap=document.querySelector('.sm-anim-wrap');
+  const wrap=document.getElementById('sm-wrap');
+  const layers=document.querySelectorAll('.sm-anim-layer');
   const chips=document.querySelectorAll('.sm-state');
-  if(!wrap||!chips.length)return;
-  function setActive(i){chips.forEach((c,j)=>c.classList.toggle('on',j===i))}
-  wrap.addEventListener('mouseenter',()=>setActive(1));
-  wrap.addEventListener('mousedown',()=>setActive(2));
-  wrap.addEventListener('mouseup',()=>setActive(1));
-  wrap.addEventListener('mouseleave',()=>setActive(0));
+  if(!wrap||!layers.length)return;
+  let current='idle';
+  function transition(state){
+    if(state===current)return;
+    current=state;
+    const map={idle:0,hover:1,pressed:2};
+    layers.forEach((l,i)=>l.classList.toggle('active',i===map[state]));
+    chips.forEach(c=>c.classList.toggle('on',c.dataset.state===state));
+  }
+  wrap.addEventListener('mouseenter',()=>transition('hover'));
+  wrap.addEventListener('mouseleave',()=>transition('idle'));
+  wrap.addEventListener('mousedown',()=>transition('pressed'));
+  wrap.addEventListener('mouseup',()=>transition('hover'));
 })();
 
 // Tab switching for code section (Fix 10)
