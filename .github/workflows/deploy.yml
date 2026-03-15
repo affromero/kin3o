@@ -3,7 +3,7 @@ name: Deploy
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    tags: ['v*']
 
 concurrency:
   group: deploy
@@ -60,13 +60,13 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           DEPLOY_STATUS: ${{ needs.deploy.outputs.deploy_status || needs.deploy.result }}
         run: |
+          TAG="${GITHUB_REF_NAME}"
           COMMIT_MSG=$(git log -1 --format='%s')
           COMMIT_SHA=$(git log -1 --format='%h')
-          PREV_SHA=$(git log -1 --format='%h' HEAD~1)
           AUTHOR=$(git log -1 --format='%an')
 
           if [ "$DEPLOY_STATUS" = "success" ]; then
-            EMOJI="✅"
+            EMOJI="🚀"
             STATUS="deployed"
           else
             EMOJI="❌"
@@ -84,14 +84,14 @@ jobs:
           fi
 
           NL=$'\n'
-          TEXT="${EMOJI} <b>kin3o.com ${STATUS}</b>${NL}"
-          TEXT="${TEXT}<code>${PREV_SHA}</code> → <code>${COMMIT_SHA}</code>  <i>${COMMIT_MSG}</i>${NL}"
+          TEXT="${EMOJI} <b>kin3o.com ${TAG} ${STATUS}</b>${NL}"
+          TEXT="${TEXT}<code>${COMMIT_SHA}</code>  <i>${COMMIT_MSG}</i>${NL}"
           TEXT="${TEXT}by ${AUTHOR}"
 
           [ -n "$HEALTH_LINE" ] && TEXT="${TEXT}${NL}${NL}<blockquote>${HEALTH_LINE}</blockquote>"
 
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          TEXT="${TEXT}${NL}<a href=\"https://kin3o.com\">kin3o.com</a>  ·  <a href=\"${RUN_URL}\">Run</a>"
+          TEXT="${TEXT}${NL}<a href=\"https://kin3o.com\">kin3o.com</a>  ·  <a href=\"https://www.npmjs.com/package/@afromero/kin3o\">npm</a>  ·  <a href=\"${RUN_URL}\">Run</a>"
 
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
