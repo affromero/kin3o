@@ -1,6 +1,6 @@
 {
   "name": "@afromero/kin3o",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "AI-powered Lottie animation generator — text to motion from your terminal",
   "type": "module",
   "license": "MIT",
