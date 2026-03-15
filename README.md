@@ -92,6 +92,13 @@ kin3o login                                            # Authenticate for publis
 kin3o publish output/anim.json --name "My Anim" --tags "loading,ui"
 kin3o logout                                           # Clear auth token
 
+# Export to video
+kin3o export output/animation.json                     # MP4 (default: 1080p 30fps)
+kin3o export output/animation.json --format gif        # GIF
+kin3o export output/animation.json --format webm       # WebM (supports transparency)
+kin3o export output/animation.lottie --res 720p        # dotLottie → MP4 at 720p
+kin3o export output/animation.json --bg white -o out.mp4  # Custom background + path
+
 # Live preview with hot reload
 kin3o view output/animation.json                       # File watcher + auto-reload
 kin3o view output/animation.lottie --port 3000         # Specific port
@@ -114,6 +121,10 @@ kin3o view output/animation.lottie --port 3000         # Specific port
 | `--no-browser` | Print search results in terminal |
 | `--lottie` | Download `.lottie` format instead of `.json` |
 | `--port <n>` | Port for view server (auto-selects if omitted) |
+| `--format <fmt>` | Export format: `mp4`, `webm`, `gif` (default: `mp4`) |
+| `--res <res>` | Export resolution: `1080p`, `720p`, `480p`, `4k`, or `WxH` |
+| `--fps <n>` | Export frames per second (default: `30`) |
+| `--bg <color>` | Export background color (hex or name) |
 
 ## Using Generated Animations
 
@@ -183,6 +194,7 @@ Lottie covers shapes, paths, easing, color transitions, masking, and — via dot
 ```
 Static:      prompt → generate() → extractJson() → validateLottie() → autoFix() → .json → preview
 Interactive: prompt → generate() → extractInteractiveJson() → validate animations + state machine → .lottie → preview
+Export:      .json/.lottie → headless Chrome (lottie-web) → frame capture → FFmpeg → MP4/WebM/GIF
 Marketplace: search → browse → download → validate → .json/.lottie → refine → publish
 Live preview: view <file> → HTTP server + fs.watch → SSE → browser auto-reload
 ```
@@ -199,6 +211,21 @@ All prompts live in `src/prompts/` with a barrel export at `src/prompts/index.ts
 | `examples-interactive.ts` | Few-shot: interactive button (idle/hover/pressed) |
 | `examples-mascot.ts` | kin3o mascot/logo (static + interactive) |
 | `tokens.ts` | Design token loader (hex → Lottie RGBA) |
+
+## Prerequisites for Export
+
+The `export` command requires Chrome/Chromium and FFmpeg installed on your system:
+
+```bash
+# macOS
+brew install --cask google-chrome
+brew install ffmpeg
+
+# Linux
+sudo apt install chromium-browser ffmpeg
+```
+
+Or set `CHROME_PATH` and `FFMPEG_PATH` environment variables to custom paths.
 
 ## Development
 

@@ -13,6 +13,7 @@ import { searchAnimations, featuredAnimations, popularAnimations, recentAnimatio
 import { openSearchResults } from './marketplace-preview.js';
 import { loadAuthToken, loadAuthExpiry, saveAuthToken, clearAuthToken } from './marketplace-auth.js';
 import { startViewServer } from './view.js';
+import { exportAnimation, parseResolution, extractLottieJsonFromFile, extractAnimationMeta, detectChromePath, detectFfmpeg } from './export.js';
 
 const program = new Command();
 
@@ -300,6 +301,92 @@ program
       }
     } catch (err) {
       console.error(`Failed to preview: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+  });
+
+interface ExportCommandOptions {
+  format: string;
+  res: string;
+  fps: string;
+  output?: string;
+  bg?: string;
+}
+
+program
+  .command('export <file>')
+  .description('Export a Lottie animation to MP4, WebM, or GIF video')
+  .option('--format <format>', 'Output format: mp4, webm, gif', 'mp4')
+  .option('--res <resolution>', 'Resolution: 1080p, 720p, 480p, 360p, 4k, or WxH', '1080p')
+  .option('--fps <fps>', 'Frames per second', '30')
+  .option('-o, --output <path>', 'Output file path')
+  .option('--bg <color>', 'Background color (hex or name, default: black for mp4, transparent for gif/webm)')
+  .action(async (file: string, options: ExportCommandOptions) => {
+    const resolvedPath = resolve(file);
+
+    if (!existsSync(resolvedPath)) {
+      console.error(`  ✗ File not found: ${resolvedPath}`);
+      process.exit(1);
+    }
+
+    const format = options.format.toLowerCase();
+    if (!['mp4', 'webm', 'gif'].includes(format)) {
+      console.error(`  ✗ Unsupported format "${options.format}". Use mp4, webm, or gif.`);
+      process.exit(1);
+    }
+
+    let resolution: { width: number; height: number };
+    try {
+      resolution = parseResolution(options.res);
+    } catch (err) {
+      console.error(`  ✗ ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+
+    const fps = parseInt(options.fps, 10);
+    if (isNaN(fps) || fps <= 0) {
+      console.error(`  ✗ Invalid fps "${options.fps}". Must be a positive number.`);
+      process.exit(1);
+    }
+
+    let background = options.bg ?? (format === 'mp4' ? '#000000' : 'transparent');
+    if (format === 'mp4' && background === 'transparent') {
+      console.log('  ⚠ MP4 does not support transparency — using black background. Use --format webm for alpha.');
+      background = '#000000';
+    }
+
+    const outputDir = ensureOutputDir();
+    const slug = slugify(file.replace(/\.[^.]+$/, '').split('/').pop() ?? 'animation');
+    const outputPath = options.output
+      ? resolve(options.output)
+      : join(outputDir, `${slug}.${format}`);
+
+    console.log('\nkin3o — Exporting animation...');
+
+    try {
+      const lottieJson = await extractLottieJsonFromFile(resolvedPath);
+      const meta = extractAnimationMeta(lottieJson);
+      console.log(`  Source: ${file}`);
+      console.log(`  Format: ${format.toUpperCase()} ${resolution.width}x${resolution.height} @ ${fps}fps`);
+      console.log(`  Duration: ${meta.durationSeconds.toFixed(1)}s (${meta.totalFrames} frames)\n`);
+
+      await exportAnimation(resolvedPath, {
+        format: format as 'mp4' | 'webm' | 'gif',
+        width: resolution.width,
+        height: resolution.height,
+        fps,
+        background,
+        output: outputPath,
+      }, (frame, total) => {
+        const pct = Math.round((frame / total) * 100);
+        process.stdout.write(`\r  Exporting: frame ${frame}/${total} (${pct}%)`);
+      });
+
+      process.stdout.write('\n');
+      console.log(`  ✓ Exported to ${outputPath}\n`);
+    } catch (err) {
+      process.stdout.write('\n');
+      console.error(`  ✗ Export failed: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
   });
