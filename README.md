@@ -4,12 +4,13 @@
 
 **Text to Motion. From your terminal.**
 
+[![npm](https://img.shields.io/npm/v/kin3o)](https://www.npmjs.com/package/kin3o)
 [![CI](https://github.com/affromero/kin3o/actions/workflows/ci.yml/badge.svg)](https://github.com/affromero/kin3o/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/affromero/kin3o/pulls)
 
-AI-powered Lottie animation generator. Turns natural language prompts into valid, playable Lottie JSON using your existing Claude or Codex subscription.
+AI-powered Lottie animation generator. Turns natural language prompts into valid, playable Lottie JSON and interactive dotLottie state machines using your existing Claude or Codex subscription.
 
 </div>
 
@@ -22,6 +23,7 @@ Every motion design tool (Rive, LottieFiles, Hera) sandboxes its AI inside a wal
 | Feature | **kin3o** | [LottieFiles](https://lottiefiles.com) | [LottieGen](https://lottiegenai.webflow.io/) | [Recraft](https://www.recraft.ai) | [Lottielab](https://www.lottielab.com) |
 |---------|-----------|-----------------|---------------|-------------|---------------|
 | Text → Lottie JSON | **Yes** | Yes (Motion Copilot) | Yes | Yes (via export) | No |
+| Text → State machines | **Yes (dotLottie)** | No | No | No | No |
 | CLI | **Yes** | No | No | No | No |
 | Web editor | **CLI-first** | Yes | Yes | Yes | Yes |
 | Open source | **Yes** | No | No | No | No |
@@ -38,32 +40,45 @@ Every motion design tool (Rive, LottieFiles, Hera) sandboxes its AI inside a wal
 ## Quick Start
 
 ```bash
-npm install
-npx tsx src/index.ts generate "loading spinner with 3 dots"
+# Install globally
+npm install -g kin3o
+
+# Generate a static animation
+kin3o generate "loading spinner with 3 dots"
+
+# Generate an interactive state machine
+kin3o generate "toggle switch with on/off states" --interactive
+```
+
+Or use without installing:
+
+```bash
+npx kin3o generate "pulsing circle"
 ```
 
 ## CLI Usage
 
 ```bash
-# Generate animation from prompt
-npx tsx src/index.ts generate "pulsing circle that breathes"
-npx tsx src/index.ts generate "5-bar audio waveform" --provider claude-code --model sonnet
-npx tsx src/index.ts generate "notification bell" --no-preview --output bell.json
-npx tsx src/index.ts generate "loading dots" --tokens sotto  # use Sotto design tokens
+# Static animations (.json)
+kin3o generate "pulsing circle that breathes"
+kin3o generate "5-bar audio waveform" --provider claude-code --model sonnet
+kin3o generate "notification bell" --no-preview --output bell.json
+kin3o generate "loading dots" --tokens sotto
 
-# Generate interactive state machine (.lottie output)
-npx tsx src/index.ts generate "toggle switch with on/off states" --interactive
+# Interactive state machines (.lottie)
+kin3o generate "toggle switch with on/off states" --interactive
+kin3o generate "like button with hover and click" --interactive
 
-# Preview existing Lottie file
-npx tsx src/index.ts preview output/animation.json
-npx tsx src/index.ts preview output/animation.lottie  # interactive dotLottie
+# Preview
+kin3o preview output/animation.json
+kin3o preview output/animation.lottie
 
-# Validate Lottie JSON or dotLottie
-npx tsx src/index.ts validate output/animation.json
-npx tsx src/index.ts validate output/animation.lottie
+# Validate
+kin3o validate output/animation.json
+kin3o validate output/animation.lottie
 
 # List available AI providers
-npx tsx src/index.ts providers
+kin3o providers
 ```
 
 ### Options
@@ -79,7 +94,7 @@ npx tsx src/index.ts providers
 
 ## Using Generated Animations
 
-kin3o outputs standard `.json` Lottie files — no compilation, no binary encoding, no special tooling. Drop them into any project:
+### Static animations (`.json`)
 
 ```tsx
 // React (lottie-react)
@@ -110,6 +125,20 @@ animationView.loopMode = .loop
 animationView.play()
 ```
 
+### Interactive state machines (`.lottie`)
+
+```html
+<!-- dotlottie-web — hover, click, and tap state transitions -->
+<script type="module">
+  import { DotLottie } from 'https://esm.sh/@lottiefiles/dotlottie-web';
+  const dotLottie = new DotLottie({
+    canvas: document.querySelector('canvas'),
+    src: './toggle-switch.lottie',
+    autoplay: true,
+  });
+</script>
+```
+
 ## Why Lottie over Rive?
 
 ### For AI generation
@@ -138,16 +167,14 @@ animationView.play()
 | Mesh deformation | ✗ | ✓ |
 | Runtime input (eyes follow cursor, sliders) | ✗ | ✓ |
 
-Lottie covers ~90% of real-world animation needs (loading spinners, icon animations, waveforms, transitions, micro-interactions). The 10% Rive wins on — interactivity, skeletal animation, mesh deformation — requires an interactive editor to wire up, not something generatable from a text prompt.
+Lottie covers ~90% of real-world animation needs. The 10% Rive wins on — skeletal animation, mesh deformation — requires an interactive editor to wire up, not something generatable from a text prompt. State machines are now covered by kin3o via dotLottie.
 
 ## Architecture
 
 ```
-Static:   prompt → provider.generate() → extractJson() → validateLottie() → autoFix() → write .json → openPreview()
-Interactive: prompt → provider.generate() → extractInteractiveJson() → validate each animation + state machine → writeDotLottie() → openDotLottiePreview()
+Static:      prompt → generate() → extractJson() → validateLottie() → autoFix() → .json → preview
+Interactive: prompt → generate() → extractInteractiveJson() → validate animations + state machine → .lottie → preview
 ```
-
-Providers spawn CLI subprocesses (`claude --print`, `codex exec`) to leverage existing subscriptions. Interactive mode generates a multi-animation envelope with a dotLottie state machine.
 
 ### Prompt System
 
@@ -165,7 +192,13 @@ All prompts live in `src/prompts/` with a barrel export at `src/prompts/index.ts
 ## Development
 
 ```bash
+npm install
 npm run typecheck    # Type check
 npm run test         # Run tests (node --test)
 npm run ci           # typecheck + test
+npm run build        # Compile to dist/
 ```
+
+## License
+
+MIT

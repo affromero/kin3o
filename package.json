@@ -1,14 +1,41 @@
 {
   "name": "kin3o",
   "version": "0.1.0",
-  "private": true,
+  "description": "AI-powered Lottie animation generator — text to motion from your terminal",
   "type": "module",
+  "license": "MIT",
+  "author": "Andres Romero <me@afromero.co>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/affromero/kin3o.git"
+  },
+  "keywords": [
+    "lottie",
+    "animation",
+    "ai",
+    "dotlottie",
+    "state-machine",
+    "cli",
+    "motion",
+    "claude",
+    "codex"
+  ],
+  "bin": {
+    "kin3o": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "preview",
+    "examples"
+  ],
   "scripts": {
     "dev": "tsx src/index.ts",
     "generate": "tsx src/index.ts generate",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx/esm --test 'src/**/*.test.ts'",
-    "ci": "npm run typecheck && npm run test"
+    "ci": "npm run typecheck && npm run test",
+    "prepublishOnly": "npm run ci && npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -20,5 +47,8 @@
     "@types/node": "^22.13.0",
     "tsx": "^4.0.0",
     "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
