@@ -16,6 +16,7 @@ kin3o generates Lottie JSON animations and interactive dotLottie state machines 
 | AI | Claude Code CLI, Codex CLI, Anthropic API |
 | Packaging | @dotlottie/dotlottie-js (create/read .lottie files) |
 | Preview | Standalone HTML + lottie-web / dotlottie-web |
+| Export | puppeteer-core (frame capture) + FFmpeg (encoding) |
 | Tests | Node test runner (`node --test`) |
 | CI/CD | GitHub Actions (CI, deploy, npm publish on tags) |
 
@@ -67,6 +68,11 @@ kin3o download <url> --lottie                           # Download .lottie forma
 kin3o login                                             # Authenticate with LottieFiles
 kin3o logout                                            # Clear stored auth token
 kin3o publish output/file.json --name "My Anim" --tags "ui,loader"  # Publish to marketplace
+kin3o export output/file.json                          # Export to MP4 (default: 1080p 30fps)
+kin3o export output/file.json --format gif             # Export to GIF
+kin3o export output/file.json --format webm            # Export to WebM (supports transparency)
+kin3o export output/file.lottie --res 720p --fps 60    # Custom resolution and framerate
+kin3o export output/file.json --bg white -o my.mp4     # Custom background + output path
 kin3o view output/file.json                          # Live preview with hot reload
 kin3o view output/file.lottie --port 3000             # Live preview on specific port
 ```
@@ -81,6 +87,7 @@ src/
   validator.ts                    — Lottie JSON validation + auto-fix
   preview.ts                      — Browser preview (static + interactive)
   view.ts                         — Live preview server with hot reload (SSE + fs.watch)
+  export.ts                       — Video export (Puppeteer frame capture + FFmpeg encoding)
   marketplace.ts                  — LottieFiles GraphQL API client (search/download/publish)
   marketplace-preview.ts          — Search results HTML generation + browser open
   marketplace-auth.ts             — Auth token persistence (~/.kin3o/auth.json)
@@ -102,6 +109,7 @@ src/
 preview/
   template.html                   — Static Lottie preview (lottie-web)
   template-interactive.html       — Interactive dotLottie preview (dotlottie-web)
+  template-export.html             — Minimal headless renderer for frame capture (lottie-web)
   template-search.html            — Marketplace search results grid (lottie-web)
 landing/
   index.html                      — Landing page (kin3o.com)
@@ -131,6 +139,7 @@ examples/
 - **Marketplace**: LottieFiles GraphQL API at `graphql.lottiefiles.com` — search/browse/download (no auth), publish (auth required)
 - **Target resolution**: download accepts UUID, LottieFiles URL, or CDN URL — `resolveTarget()` normalizes all formats
 - **Auth flow**: `createLoginToken` → browser login → poll `tokenLogin` → save to `~/.kin3o/auth.json`
+- **Video export**: lottie-web renders in headless Chrome via puppeteer-core, frame-by-frame capture with `goToAndStop()`, piped to FFmpeg. GIF uses two-pass palette generation for quality. Requires system Chrome + FFmpeg.
 
 ## DO
 
