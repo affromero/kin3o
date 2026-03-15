@@ -710,6 +710,46 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   font-size:.75rem;color:var(--text-3);line-height:1.5;
 }
 
+/* ── FAQ ── */
+.faq-s{padding:8rem 0}
+.faq-header{margin-bottom:3rem}
+.faq-header p{color:var(--text-3);max-width:480px;margin-top:.5rem}
+.faq-list{
+  display:flex;flex-direction:column;gap:1px;
+  background:var(--line);border-radius:16px;overflow:hidden;
+}
+.faq-item{background:var(--card)}
+.faq-q{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:1.25rem 1.5rem;
+  font-family:var(--sans);font-size:.92rem;font-weight:600;
+  color:var(--text-1);
+  background:none;border:none;cursor:pointer;
+  text-align:left;line-height:1.4;
+  transition:background .2s;
+}
+.faq-q:hover{background:rgba(255,255,255,.02)}
+.faq-chevron{
+  flex-shrink:0;margin-left:1rem;
+  font-size:.7rem;color:var(--text-3);
+  transition:transform .25s ease;
+}
+.faq-item.open .faq-chevron{transform:rotate(180deg)}
+.faq-a{
+  max-height:0;overflow:hidden;
+  transition:max-height .3s ease, padding .3s ease;
+}
+.faq-item.open .faq-a{max-height:400px}
+.faq-a-inner{
+  padding:0 1.5rem 1.25rem;
+  font-size:.84rem;color:var(--text-2);line-height:1.65;
+  max-width:640px;
+}
+.faq-a-inner code{
+  font-family:var(--mono);font-size:.78rem;
+  background:var(--raised);padding:.15rem .4rem;border-radius:4px;
+}
+
 /* ── End (Fix 12) ── */
 .end{padding:9rem 0 5rem;text-align:center}
 .end .sh{margin-bottom:2rem}
@@ -770,6 +810,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
       <a href="#cli">CLI</a>
       <a href="#marketplace">Marketplace</a>
       <a href="#compare">Compare</a>
+      <a href="#faq">FAQ</a>
       <a href="#start" class="nav-cta">Get Started</a>
     </div>
   </div>
@@ -1093,6 +1134,38 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   </div>
 </section>
 
+<!-- FAQ -->
+<section class="faq-s" id="faq">
+  <div class="w">
+    <div class="faq-header">
+      <h2 class="sh">FAQ</h2>
+      <p>Common questions about kin3o.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q">Why use kin3o instead of Claude Code or Codex directly?<span class="faq-chevron">&#9660;</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Prompting an LLM for Lottie JSON is only the first 20% of the work. kin3o handles everything else: system prompts tuned for the Lottie spec, few-shot examples so the model doesn't hallucinate layer types, JSON extraction from markdown-wrapped output, structural validation, auto-fix for common AI mistakes (0-255 colors, missing fields, invalid keyframes), dotLottie packaging for interactive state machines, live preview, and marketplace integration. You'd have to build and maintain all of that yourself.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Does it cost anything?<span class="faq-chevron">&#9660;</span></button>
+        <div class="faq-a"><div class="faq-a-inner">kin3o itself is free and open-source (MIT). It uses your existing Claude Code or Codex subscription to generate animations &mdash; no separate API keys, credits, or accounts needed. If you prefer direct API access, you can use an Anthropic API key instead.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What AI providers does it support?<span class="faq-chevron">&#9660;</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Three providers, auto-detected in order: Claude Code CLI (uses your active session), Codex CLI (OpenAI's terminal agent), and the Anthropic API (requires an API key). kin3o picks the first available provider, or you can choose one explicitly with <code>--provider</code>.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Is the output production-ready?<span class="faq-chevron">&#9660;</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Yes. Every generated file is validated against the Lottie spec before it's written to disk. Common AI mistakes &mdash; like RGB values in 0-255 instead of 0-1, missing version fields, or malformed keyframes &mdash; are auto-corrected. The output is standard Lottie JSON that works with lottie-web, lottie-react, lottie-ios, and lottie-android with no modifications.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I customize animations after generating?<span class="faq-chevron">&#9660;</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Yes, two ways. Use <code>kin3o refine output/file.json "make it faster"</code> to send the current animation back to AI with your instructions &mdash; it outputs a versioned file (e.g. <code>anim-v2.json</code>). Or edit the JSON directly &mdash; it's a standard, documented format that works in After Effects, LottieFiles editor, or any text editor.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="end" id="start">
   <div class="w">
     <h2 class="sh">Start generating</h2>
@@ -1222,6 +1295,13 @@ document.querySelectorAll('.code-tab').forEach(tab=>{
     document.querySelectorAll('.code-body pre').forEach(p=>p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('code-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    btn.parentElement.classList.toggle('open');
   });
 });
 </script>
