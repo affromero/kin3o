@@ -6,7 +6,7 @@ import type { GenerationResult } from './registry.js';
 import { filterCliStderr } from '../utils.js';
 
 export async function generateWithCodex(
-  _model: string,
+  model: string,
   systemPrompt: string,
   userPrompt: string,
 ): Promise<GenerationResult> {
@@ -14,13 +14,16 @@ export async function generateWithCodex(
   const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
   const tmpFile = join(mkdtempSync(join(tmpdir(), 'codex-')), 'output.txt');
 
+  const args = [
+    'exec', '-',
+    '--skip-git-repo-check',
+    '--ephemeral',
+    '-o', tmpFile,
+    '--model', model,
+  ];
+
   const content = await new Promise<string>((resolve, reject) => {
-    const proc = spawn('codex', [
-      'exec', '-',
-      '--skip-git-repo-check',
-      '--ephemeral',
-      '-o', tmpFile,
-    ], {
+    const proc = spawn('codex', args, {
       timeout: 240_000,
       env: { ...process.env },
     });
@@ -57,7 +60,7 @@ export async function generateWithCodex(
   return {
     content,
     provider: 'codex',
-    model: 'codex',
+    model,
     durationMs: Date.now() - start,
   };
 }

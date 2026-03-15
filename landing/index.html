@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kineo — Text to Motion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body{
+  background:#0B0B0F;
+  color:#B8B8C0;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  font-weight:400;
+  font-size:15px;
+  line-height:1.65;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+::selection{background:#E8DCC8;color:#0B0B0F}
+
+/* ── Tokens ── */
+:root{
+  --surface:#0B0B0F;
+  --raised:#101015;
+  --card:#14141A;
+  --line:#1C1C24;
+  --line-subtle:#141419;
+  --text-1:#E8E8EC;
+  --text-2:#8E8E9A;
+  --text-3:#55555F;
+  --accent:#C9A260;
+  --accent-hover:#D4B070;
+  --accent-subtle:rgba(201,162,96,.08);
+  --accent-border:rgba(201,162,96,.15);
+  --green:#5A9E6F;
+  --red:#8B4444;
+  --radius:12px;
+  --mono:'JetBrains Mono',monospace;
+  --serif:'Fraunces',serif;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+
+/* ── Layout ── */
+.w{max-width:1140px;margin:0 auto;padding:0 clamp(1.25rem,4vw,2.5rem)}
+
+/* ── Nav ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:1.25rem 0;
+  background:rgba(11,11,15,.85);
+  backdrop-filter:blur(16px) saturate(1.4);
+  border-bottom:1px solid var(--line-subtle);
+}
+nav .w{display:flex;justify-content:space-between;align-items:center}
+
+.logo{
+  font-family:var(--serif);font-size:1.35rem;
+  color:var(--text-1);text-decoration:none;
+  font-weight:500;letter-spacing:-.02em;
+  font-variation-settings:'opsz' 32;
+}
+
+.nav-r{display:flex;gap:2rem;align-items:center}
+.nav-r a{
+  font-size:.8rem;font-weight:500;color:var(--text-3);
+  text-decoration:none;transition:color .2s;
+}
+.nav-r a:hover{color:var(--text-2)}
+.nav-cta{
+  font-size:.78rem !important;font-weight:600 !important;
+  color:var(--surface) !important;
+  background:var(--text-1);
+  padding:.5rem 1.15rem;border-radius:8px;
+  transition:opacity .15s !important;
+}
+.nav-cta:hover{opacity:.85}
+
+/* ── Hero ── */
+.hero{
+  min-height:100svh;
+  display:grid;grid-template-columns:1fr 1fr;
+  position:relative;
+}
+
+.hero-l{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:0 clamp(2rem,5vw,5rem) 0 clamp(1.25rem,4vw,2.5rem);
+  max-width:640px;justify-self:end;
+}
+
+.hero h1{
+  font-family:var(--serif);
+  font-size:clamp(2.8rem,5.5vw,4.6rem);
+  font-weight:400;line-height:1;
+  letter-spacing:-.035em;color:var(--text-1);
+  margin-bottom:1.5rem;
+  text-wrap:balance;
+  font-variation-settings:'opsz' 72;
+}
+
+.hero h1 em{
+  font-style:italic;
+  color:var(--accent);
+}
+
+.hero-p{
+  font-size:1.05rem;color:var(--text-2);
+  max-width:400px;margin-bottom:2.5rem;
+  line-height:1.75;
+}
+
+.cmd{
+  font-family:var(--mono);font-size:.78rem;
+  color:var(--text-2);background:var(--card);
+  border:1px solid var(--line);
+  padding:.8rem 1.3rem;border-radius:10px;
+  display:inline-flex;gap:.75rem;
+  user-select:all;cursor:text;
+  transition:border-color .2s;
+}
+.cmd:hover{border-color:var(--accent-border)}
+.cmd-p{color:var(--text-3);user-select:none}
+
+.hero-r{
+  display:flex;align-items:center;justify-content:center;
+  background:var(--raised);
+  border-left:1px solid var(--line-subtle);
+  position:relative;overflow:hidden;
+}
+
+.hero-r::before{
+  content:'';position:absolute;
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(201,162,96,.04) 0%,transparent 65%);
+  pointer-events:none;
+}
+
+.hero-anim{width:min(380px,75%);aspect-ratio:1}
+
+.hero-tag{
+  position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:.58rem;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-3);white-space:nowrap;
+}
+
+/* ── Showcase ── */
+.showcase{padding:10rem 0 0}
+
+.sh{
+  font-family:var(--serif);
+  font-size:clamp(1.8rem,3.5vw,2.8rem);
+  font-weight:400;line-height:1.1;
+  letter-spacing:-.025em;color:var(--text-1);
+  margin-bottom:.75rem;text-wrap:balance;
+  font-variation-settings:'opsz' 48;
+}
+
+.sp{color:var(--text-3);max-width:460px;margin-bottom:3.5rem;font-size:.95rem}
+
+/* ── Carousel ── */
+.carousel{position:relative;overflow:hidden}
+.c-track{display:flex;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+.c-slide{
+  min-width:100%;display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:clamp(2rem,4vw,4rem);
+  align-items:center;
+  padding:0 clamp(1.25rem,4vw,2.5rem);
+}
+
+.c-anim-wrap{
+  aspect-ratio:1;max-width:440px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  overflow:hidden;
+  padding:8%;
+  justify-self:end;
+  transition:border-color .3s;
+}
+.c-slide.active .c-anim-wrap{border-color:var(--accent-border)}
+
+.c-info{max-width:400px}
+
+.c-prompt{
+  font-family:var(--serif);
+  font-size:clamp(1.4rem,2.5vw,1.9rem);
+  font-weight:400;line-height:1.25;
+  color:var(--text-1);margin-bottom:1.25rem;
+  font-style:italic;
+  font-variation-settings:'opsz' 36;
+}
+
+.c-stats{display:flex;gap:2rem;margin-bottom:1rem}
+.c-stat-label{
+  font-family:var(--mono);font-size:.55rem;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:.2rem;
+}
+.c-stat-val{font-size:.85rem;color:var(--text-2)}
+
+.c-valid{
+  font-family:var(--mono);font-size:.68rem;
+  color:var(--green);
+  display:inline-flex;align-items:center;gap:.35rem;
+}
+
+.c-nav{
+  display:flex;gap:.5rem;
+  justify-content:center;
+  margin-top:3rem;
+}
+.c-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--text-3);opacity:.3;
+  border:none;padding:0;cursor:pointer;
+  transition:all .25s;
+}
+.c-dot.on{opacity:1;background:var(--accent);transform:scale(1.4)}
+
+.c-bar-wrap{
+  width:80px;height:1.5px;margin:1rem auto 0;
+  background:var(--line);border-radius:1px;overflow:hidden;
+}
+.c-bar{height:100%;width:0;background:var(--accent);border-radius:1px}
+
+/* ── Terminal ── */
+.term-s{
+  padding:10rem 0;
+  background:var(--raised);
+  border-top:1px solid var(--line-subtle);
+  border-bottom:1px solid var(--line-subtle);
+}
+
+.term-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:clamp(2rem,5vw,5rem);align-items:start;
+}
+
+.term-intro .sh{margin-bottom:1rem}
+.term-intro p{color:var(--text-3);max-width:380px;margin-bottom:2rem;line-height:1.8}
+
+.platforms{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.platforms li{
+  font-size:.82rem;color:var(--text-3);
+  padding-left:1rem;position:relative;
+}
+.platforms li::before{
+  content:'';position:absolute;left:0;top:.65em;
+  width:3px;height:3px;background:var(--line);border-radius:50%;
+}
+
+.term{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+  font-family:var(--mono);font-size:.76rem;line-height:2;
+}
+.term-chrome{
+  padding:.6rem 1rem;border-bottom:1px solid var(--line-subtle);
+  display:flex;gap:.35rem;
+}
+.term-chrome i{
+  width:8px;height:8px;border-radius:50%;
+  display:block;font-style:normal;
+}
+.term-chrome i:nth-child(1){background:#3D2020}
+.term-chrome i:nth-child(2){background:#3D3520}
+.term-chrome i:nth-child(3){background:#1E3D20}
+
+.term-body{padding:1.25rem 1.5rem}
+.tl{opacity:0;animation:ti .3s ease forwards}
+@keyframes ti{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
+.tl:nth-child(1){animation-delay:.15s}
+.tl:nth-child(2){animation-delay:.5s}
+.tl:nth-child(3){animation-delay:.75s}
+.tl:nth-child(4){animation-delay:1.15s}
+.tl:nth-child(5){animation-delay:1.35s}
+.tl:nth-child(6){animation-delay:1.55s}
+
+.tp{color:var(--accent)}
+.tc{color:var(--text-1)}
+.ts{color:#7E8CAA}
+.tok{color:var(--green)}
+.td{color:var(--text-3)}
+
+/* ── Code ── */
+.code-s{padding:10rem 0}
+.code-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;
+}
+.code-panel{background:var(--card);padding:1.75rem}
+.code-label{
+  font-family:var(--mono);font-size:.55rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:1rem;
+  padding-bottom:.65rem;border-bottom:1px solid var(--line-subtle);
+}
+.code-panel pre{
+  font-family:var(--mono);font-size:.72rem;
+  line-height:1.85;color:var(--text-2);
+  overflow-x:auto;white-space:pre;
+}
+.code-panel .kw{color:#8B7EC8}
+.code-panel .fn{color:#7E8CAA}
+.code-panel .st{color:#7E9E70}
+.code-panel .tg{color:#B07070}
+.code-panel .at{color:var(--accent)}
+
+/* ── Compare ── */
+.cmp-s{
+  padding:10rem 0;
+  background:var(--raised);
+  border-top:1px solid var(--line-subtle);
+  border-bottom:1px solid var(--line-subtle);
+}
+
+.cmp-header{margin-bottom:3rem}
+.cmp-header p{color:var(--text-3);max-width:480px;margin-top:.5rem}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:.82rem}
+.cmp th{
+  font-family:var(--mono);font-size:.55rem;font-weight:500;
+  text-transform:uppercase;letter-spacing:.12em;
+  color:var(--text-3);text-align:left;
+  padding:.8rem 1.25rem;border-bottom:1px solid var(--line);
+}
+.cmp td{
+  padding:.7rem 1.25rem;
+  border-bottom:1px solid var(--line-subtle);
+  color:var(--text-3);
+}
+.cmp tr:last-child td{border-bottom:none}
+.cmp td:first-child{color:var(--text-2);font-weight:500}
+.cmp .w{color:var(--text-1)}
+.cmp .y{color:var(--green)}
+.cmp .n{color:var(--red)}
+
+/* ── End ── */
+.end{padding:12rem 0 4rem;text-align:center}
+.end .sh{margin-bottom:2rem}
+.end .cmd{margin-bottom:1.5rem}
+.end-foot{
+  font-family:var(--mono);font-size:.6rem;
+  color:var(--text-3);letter-spacing:.06em;
+  margin-top:8rem;
+}
+.end-foot a{color:var(--text-3);text-decoration:none}
+.end-foot a:hover{color:var(--accent)}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;min-height:auto}
+  .hero-l{justify-self:start;padding:8rem 1.5rem 4rem;max-width:100%}
+  .hero-r{height:55vw;min-height:280px;border-left:none;border-top:1px solid var(--line-subtle)}
+  .term-grid{grid-template-columns:1fr}
+  .c-slide{grid-template-columns:1fr}
+  .c-anim-wrap{justify-self:center;max-width:320px}
+  .c-info{text-align:center;justify-self:center}
+  .c-stats{justify-content:center}
+  .code-grid{grid-template-columns:1fr}
+  .nav-r a:not(.nav-cta){display:none}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .c-track{transition:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="w">
+    <a href="#" class="logo">kineo</a>
+    <div class="nav-r">
+      <a href="#showcase">Showcase</a>
+      <a href="#cli">CLI</a>
+      <a href="#compare">Lottie vs Rive</a>
+      <a href="#start" class="nav-cta">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-l">
+    <h1>Describe it.<br><em>Animate it.</em></h1>
+    <p class="hero-p">
+      Generate production-ready Lottie animations from your terminal.
+      Uses your existing Claude or Codex subscription. No credits, no editors.
+    </p>
+    <div class="cmd">
+      <span class="cmd-p">$</span>
+      npx kineo generate "loading spinner"
+    </div>
+  </div>
+  <div class="hero-r">
+    <div class="hero-anim" id="hero-anim"></div>
+    <span class="hero-tag">AI-generated &middot; valid Lottie JSON &middot; 60fps</span>
+  </div>
+</section>
+
+<section class="showcase" id="showcase">
+  <div class="w">
+    <h2 class="sh">Real output, zero editing</h2>
+    <p class="sp">Every animation on this page was generated by Kineo. No After Effects. No designers.</p>
+  </div>
+
+  <div class="w">
+    <div class="carousel">
+      <div class="c-track" id="c-track">
+
+        <div class="c-slide active">
+          <div class="c-anim-wrap"><div id="c0" style="width:100%;height:100%"></div></div>
+          <div class="c-info">
+            <div class="c-prompt">"5-bar audio waveform in amber color"</div>
+            <div class="c-stats">
+              <div><div class="c-stat-label">Provider</div><div class="c-stat-val">Claude Code</div></div>
+              <div><div class="c-stat-label">Model</div><div class="c-stat-val">Sonnet</div></div>
+              <div><div class="c-stat-label">Time</div><div class="c-stat-val">113s</div></div>
+            </div>
+            <div class="c-valid">&#10003; Valid Lottie &middot; 5 layers &middot; 120 frames</div>
+          </div>
+        </div>
+
+        <div class="c-slide">
+          <div class="c-anim-wrap"><div id="c1" style="width:100%;height:100%"></div></div>
+          <div class="c-info">
+            <div class="c-prompt">"notification bell that shakes"</div>
+            <div class="c-stats">
+              <div><div class="c-stat-label">Provider</div><div class="c-stat-val">Claude Code</div></div>
+              <div><div class="c-stat-label">Model</div><div class="c-stat-val">Sonnet</div></div>
+              <div><div class="c-stat-label">Time</div><div class="c-stat-val">218s</div></div>
+            </div>
+            <div class="c-valid">&#10003; Valid Lottie &middot; 1 layer &middot; bezier paths</div>
+          </div>
+        </div>
+
+        <div class="c-slide">
+          <div class="c-anim-wrap"><div id="c2" style="width:100%;height:100%"></div></div>
+          <div class="c-info">
+            <div class="c-prompt">"pulsing circle that breathes"</div>
+            <div class="c-stats">
+              <div><div class="c-stat-label">Provider</div><div class="c-stat-val">Claude Code</div></div>
+              <div><div class="c-stat-label">Model</div><div class="c-stat-val">Sonnet</div></div>
+              <div><div class="c-stat-label">Time</div><div class="c-stat-val">21s</div></div>
+            </div>
+            <div class="c-valid">&#10003; Valid Lottie &middot; 1 layer &middot; scale + opacity</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="c-nav" id="c-nav">
+        <button class="c-dot on" onclick="go(0)"></button>
+        <button class="c-dot" onclick="go(1)"></button>
+        <button class="c-dot" onclick="go(2)"></button>
+      </div>
+      <div class="c-bar-wrap"><div class="c-bar" id="c-bar"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="term-s" id="cli">
+  <div class="w">
+    <div class="term-grid">
+      <div class="term-intro">
+        <h2 class="sh">One command,<br>valid Lottie</h2>
+        <p>Describe the animation. Kineo generates validated JSON and opens a live preview. Drop the file into any frontend.</p>
+        <ul class="platforms">
+          <li>React &mdash; lottie-react</li>
+          <li>Web &mdash; lottie-web</li>
+          <li>iOS &mdash; lottie-ios</li>
+          <li>Android &mdash; lottie-android</li>
+        </ul>
+      </div>
+      <div class="term">
+        <div class="term-chrome"><i></i><i></i><i></i></div>
+        <div class="term-body">
+          <div class="tl"><span class="tp">$</span> <span class="tc">npx kineo generate</span> <span class="ts">"notification bell that shakes"</span></div>
+          <div class="tl"><br></div>
+          <div class="tl"><span class="td">&nbsp;&nbsp;Provider: Claude Code (sonnet)</span></div>
+          <div class="tl"><br></div>
+          <div class="tl"><span class="tok">&nbsp;&nbsp;&#10003;</span> <span class="td">Generated in 21.3s</span></div>
+          <div class="tl"><span class="tok">&nbsp;&nbsp;&#10003;</span> <span class="td">Valid Lottie JSON</span></div>
+          <div class="tl"><span class="tok">&nbsp;&nbsp;&#10003;</span> <span class="td">output/notification-bell.json</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="code-s">
+  <div class="w">
+    <h2 class="sh" style="margin-bottom:3rem">Drop into any frontend</h2>
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-label">React</div>
+        <pre><span class="kw">import</span> <span class="fn">Lottie</span> <span class="kw">from</span> <span class="st">'lottie-react'</span>
+<span class="kw">import</span> <span class="fn">bell</span> <span class="kw">from</span> <span class="st">'./bell.json'</span>
+
+<span class="kw">export function</span> <span class="fn">Bell</span>() {
+  <span class="kw">return</span> (
+    &lt;<span class="fn">Lottie</span>
+      <span class="at">animationData</span>={<span class="fn">bell</span>}
+      <span class="at">loop</span>
+      <span class="at">autoplay</span>
+    /&gt;
+  )
+}</pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-label">Vanilla JS</div>
+        <pre>&lt;<span class="tg">div</span> <span class="at">id</span>=<span class="st">"bell"</span>&gt;&lt;/<span class="tg">div</span>&gt;
+
+&lt;<span class="tg">script</span>&gt;
+  <span class="fn">lottie</span>.<span class="fn">loadAnimation</span>({
+    <span class="at">container</span>:
+      <span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="st">'bell'</span>),
+    <span class="at">path</span>: <span class="st">'./bell.json'</span>,
+    <span class="at">loop</span>: <span class="kw">true</span>,
+    <span class="at">autoplay</span>: <span class="kw">true</span>
+  })
+&lt;/<span class="tg">script</span>&gt;</pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-label">Swift</div>
+        <pre><span class="kw">import</span> <span class="fn">Lottie</span>
+
+<span class="kw">let</span> <span class="fn">bell</span> = <span class="fn">LottieAnimationView</span>(
+  <span class="at">name</span>: <span class="st">"bell"</span>
+)
+<span class="fn">bell</span>.<span class="at">loopMode</span> = .<span class="fn">loop</span>
+<span class="fn">bell</span>.<span class="fn">play</span>()
+
+<span class="fn">view</span>.<span class="fn">addSubview</span>(<span class="fn">bell</span>)</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cmp-s" id="compare">
+  <div class="w">
+    <div class="cmp-header">
+      <h2 class="sh">Lottie vs Rive</h2>
+      <p>Rive has AI inside their editor. Kineo brings AI to your terminal &mdash; no credits, no lock-in.</p>
+    </div>
+    <table class="cmp">
+      <thead><tr><th style="width:28%"></th><th style="width:36%">Kineo + Lottie</th><th style="width:36%">Rive AI</th></tr></thead>
+      <tbody>
+        <tr><td>Format</td><td class="w">JSON &mdash; text, diffable</td><td>Binary .riv</td></tr>
+        <tr><td>AI workflow</td><td class="w">CLI, any terminal</td><td>Inside editor only</td></tr>
+        <tr><td>Cost</td><td class="w">$0 (existing sub)</td><td>Per-credit</td></tr>
+        <tr><td>Context</td><td class="w">Full system prompt control</td><td class="n">None</td></tr>
+        <tr><td>Shapes, paths, easing</td><td class="y">&#10003;</td><td class="y">&#10003;</td></tr>
+        <tr><td>Color transitions</td><td class="y">&#10003;</td><td class="y">&#10003;</td></tr>
+        <tr><td>State machines</td><td class="n">&#10007;</td><td class="y">&#10003;</td></tr>
+        <tr><td>Skeletal / mesh</td><td class="n">&#10007;</td><td class="y">&#10003;</td></tr>
+        <tr><td>Ecosystem</td><td class="w">LottieFiles, AE, React, iOS, Android</td><td>Rive editor</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="end" id="start">
+  <div class="w">
+    <h2 class="sh">Start generating</h2>
+    <div class="cmd">
+      <span class="cmd-p">$</span>
+      npx kineo generate "loading spinner"
+    </div>
+    <p class="end-foot">
+      <a href="#">GitHub</a> &middot; MIT License &middot; Built with Claude
+    </p>
+  </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script>
+const W={"v":"5.5.2","fr":60,"ip":0,"op":120,"w":512,"h":512,"ddd":0,"assets":[],"layers":[{"ty":4,"ind":0,"nm":"Bar 1","ip":0,"op":120,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[156,256]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Bar Group 1","it":[{"ty":"rc","nm":"Rectangle","p":{"a":0,"k":[0,0]},"s":{"a":1,"k":[{"t":0,"s":[30,40],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":30,"s":[30,100],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":60,"s":[30,40],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":90,"s":[30,80],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[30,40]}]},"r":{"a":0,"k":4}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[1,0.702,0,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0},{"ty":4,"ind":1,"nm":"Bar 2","ip":0,"op":120,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[206,256]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Bar Group 2","it":[{"ty":"rc","nm":"Rectangle","p":{"a":0,"k":[0,0]},"s":{"a":1,"k":[{"t":10,"s":[30,40],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":40,"s":[30,140],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":70,"s":[30,40],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":100,"s":[30,110],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[30,40]}]},"r":{"a":0,"k":4}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[1,0.702,0,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0},{"ty":4,"ind":2,"nm":"Bar 3","ip":0,"op":120,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[256,256]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Bar Group 3","it":[{"ty":"rc","nm":"Rectangle","p":{"a":0,"k":[0,0]},"s":{"a":1,"k":[{"t":20,"s":[30,40],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":50,"s":[30,180],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":80,"s":[30,40],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":100,"s":[30,150],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[30,40]}]},"r":{"a":0,"k":4}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[1,0.702,0,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0},{"ty":4,"ind":3,"nm":"Bar 4","ip":0,"op":120,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[306,256]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Bar Group 4","it":[{"ty":"rc","nm":"Rectangle","p":{"a":0,"k":[0,0]},"s":{"a":1,"k":[{"t":10,"s":[30,40],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":40,"s":[30,140],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":70,"s":[30,40],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":100,"s":[30,110],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[30,40]}]},"r":{"a":0,"k":4}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[1,0.702,0,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0},{"ty":4,"ind":4,"nm":"Bar 5","ip":0,"op":120,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[356,256]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Bar Group 5","it":[{"ty":"rc","nm":"Rectangle","p":{"a":0,"k":[0,0]},"s":{"a":1,"k":[{"t":0,"s":[30,40],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":30,"s":[30,100],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":60,"s":[30,40],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":90,"s":[30,80],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[30,40]}]},"r":{"a":0,"k":4}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[1,0.702,0,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0}]};
+
+const B={"v":"5.5.2","fr":60,"ip":0,"op":180,"w":512,"h":512,"ddd":0,"assets":[],"layers":[{"ty":4,"ind":0,"nm":"Bell","ip":0,"op":180,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,-110]},"p":{"a":0,"k":[256,190]},"s":{"a":0,"k":[100,100]},"r":{"a":1,"k":[{"t":0,"s":[0],"o":{"x":[0.3],"y":[0]},"i":{"x":[0.7],"y":[1]}},{"t":8,"s":[-12],"o":{"x":[0.3],"y":[0]},"i":{"x":[0.7],"y":[1]}},{"t":20,"s":[22],"o":{"x":[0.3],"y":[0]},"i":{"x":[0.7],"y":[1]}},{"t":32,"s":[-18],"o":{"x":[0.3],"y":[0]},"i":{"x":[0.7],"y":[1]}},{"t":44,"s":[14],"o":{"x":[0.3],"y":[0]},"i":{"x":[0.7],"y":[1]}},{"t":56,"s":[-10],"o":{"x":[0.3],"y":[0]},"i":{"x":[0.7],"y":[1]}},{"t":68,"s":[6],"o":{"x":[0.3],"y":[0]},"i":{"x":[0.7],"y":[1]}},{"t":78,"s":[-3],"o":{"x":[0.3],"y":[0]},"i":{"x":[0.7],"y":[1]}},{"t":88,"s":[0],"o":{"x":[0.3],"y":[0]},"i":{"x":[0.7],"y":[1]}},{"t":180,"s":[0]}]},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Bell Body","it":[{"ty":"sh","nm":"Bell Path","ks":{"a":0,"k":{"c":true,"v":[[0,-110],[10,-100],[60,-70],[100,20],[90,80],[-90,80],[-100,20],[-60,-70],[-10,-100]],"i":[[-5,0],[0,-5],[-20,-20],[0,-40],[10,-20],[30,0],[0,30],[-20,30],[-15,15]],"o":[[5,0],[15,15],[20,30],[0,30],[-30,0],[-10,0],[0,-40],[20,-20],[0,-5]]}}},{"ty":"fl","nm":"Bell Fill","c":{"a":0,"k":[0.937,0.765,0.161,1]},"o":{"a":0,"k":100},"r":1},{"ty":"st","nm":"Bell Stroke","c":{"a":0,"k":[0.58,0.44,0.05,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":5},"lc":2,"lj":2},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]},{"ty":"gr","nm":"Clapper","it":[{"ty":"el","nm":"Clapper Ball","p":{"a":0,"k":[0,102]},"s":{"a":0,"k":[24,24]}},{"ty":"fl","nm":"Clapper Fill","c":{"a":0,"k":[0.58,0.44,0.05,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]},{"ty":"gr","nm":"Notification Dot","it":[{"ty":"el","nm":"Red Dot","p":{"a":0,"k":[80,-88]},"s":{"a":0,"k":[34,34]}},{"ty":"fl","nm":"Dot Fill","c":{"a":0,"k":[0.929,0.196,0.196,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0}]};
+
+const P={"v":"5.5.2","fr":60,"ip":0,"op":180,"w":512,"h":512,"ddd":0,"assets":[],"layers":[{"ty":4,"ind":0,"nm":"Breathing Circle","ip":0,"op":180,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[256,256]},"s":{"a":1,"k":[{"t":0,"s":[80,80],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":90,"s":[120,120],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":180,"s":[80,80]}]},"r":{"a":0,"k":0},"o":{"a":1,"k":[{"t":0,"s":[65],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":90,"s":[100],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":180,"s":[65]}]}},"shapes":[{"ty":"gr","nm":"Circle Group","it":[{"ty":"el","nm":"Ellipse","p":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[0.18,0.6,0.9,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0}]};
+
+function L(id,d){lottie.loadAnimation({container:document.getElementById(id),renderer:'svg',loop:!0,autoplay:!0,animationData:JSON.parse(JSON.stringify(d))})}
+L('hero-anim',W);L('c0',W);L('c1',B);L('c2',P);
+
+// Carousel
+let cur=0,timer,prog;const DUR=6000,INT=30,N=3;
+function go(i){
+  cur=i;
+  document.getElementById('c-track').style.transform=`translateX(-${i*100}%)`;
+  document.querySelectorAll('.c-slide').forEach((s,j)=>s.classList.toggle('active',j===i));
+  document.querySelectorAll('.c-dot').forEach((d,j)=>d.classList.toggle('on',j===i));
+  reset();
+}
+function reset(){
+  clearInterval(prog);clearTimeout(timer);
+  const b=document.getElementById('c-bar');let e=0;b.style.width='0%';
+  prog=setInterval(()=>{e+=INT;b.style.width=(e/DUR*100)+'%';if(e>=DUR)clearInterval(prog)},INT);
+  timer=setTimeout(()=>go((cur+1)%N),DUR);
+}
+reset();
+const cw=document.querySelector('.carousel');
+cw.addEventListener('mouseenter',()=>{clearInterval(prog);clearTimeout(timer)});
+cw.addEventListener('mouseleave',reset);
+</script>
+</body>
+</html>

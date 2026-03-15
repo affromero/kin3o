@@ -8,6 +8,24 @@ Named after *kinesis* (Greek: movement/motion).
 
 Every motion design tool (Rive, LottieFiles, Hera) sandboxes its AI inside a walled-garden editor, charges per-generation credits, and requires designs we don't have. Kineo spawns `claude --print` or `codex exec` as subprocesses to use existing Max/Pro subscriptions at zero marginal cost, with full context control via system prompts.
 
+## Competitors
+
+| Feature | **Kineo** | **LottieFiles** | **LottieGen** | **Recraft** | **Lottielab** |
+|---------|-----------|-----------------|---------------|-------------|---------------|
+| Text → Lottie JSON | Yes | Yes (Motion Copilot) | Yes | Yes (via export) | No |
+| CLI | Yes | No | No | No | No |
+| Web editor | No | Yes | Yes | Yes | Yes |
+| Open source | Yes | No | No | No | No |
+| Uses your own AI sub | Yes | No | No | No | No |
+| Custom design tokens | Yes | No | No | No | No |
+| Animation library | No | Yes (massive) | No | Yes | Yes |
+| State machines | No | Yes | No | No | Yes |
+| Team collaboration | No | Yes | No | Yes | Yes |
+| API access | No | Yes | No | Yes | Yes |
+| **Price** | **Free (OSS)** | **Free / $19.99+/mo** | **Waitlist (TBD)** | **Free (50/day) / $10+/mo** | **Free / up to $99/mo** |
+
+> Sources: [LottieFiles](https://lottiefiles.com/pricing) · [LottieGen](https://lottiegenai.webflow.io/) · [Recraft](https://www.recraft.ai/pricing) · [Lottielab](https://www.lottielab.com/pricing) — prices as of March 2025.
+
 ## Quick Start
 
 ```bash
@@ -44,7 +62,42 @@ npx tsx src/index.ts providers
 | `--no-preview` | Skip browser preview |
 | `-t, --tokens <path>` | Design tokens JSON or `sotto` preset |
 
-## Lottie vs Rive for AI Generation
+## Using Generated Animations
+
+Kineo outputs standard `.json` Lottie files — no compilation, no binary encoding, no special tooling. Drop them into any project:
+
+```tsx
+// React (lottie-react)
+import Lottie from 'lottie-react';
+import animationData from './pulsing-circle.json';
+
+<Lottie animationData={animationData} loop autoplay />
+```
+
+```html
+<!-- Vanilla JS (lottie-web) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<div id="anim"></div>
+<script>
+  lottie.loadAnimation({
+    container: document.getElementById('anim'),
+    path: './pulsing-circle.json',
+    loop: true,
+    autoplay: true,
+  });
+</script>
+```
+
+```swift
+// iOS (lottie-ios)
+let animationView = LottieAnimationView(name: "pulsing-circle")
+animationView.loopMode = .loop
+animationView.play()
+```
+
+## Why Lottie over Rive?
+
+### For AI generation
 
 | Criteria | Lottie | Rive |
 |----------|--------|------|
@@ -52,9 +105,25 @@ npx tsx src/index.ts providers
 | LLM can generate? | Yes (structured JSON) | No (binary, no public writer) |
 | Web runtime | lottie-web (165KB) | @rive-app/canvas (200KB+) |
 | React integration | lottie-react | @rive-app/react-canvas |
-| Interactivity | Play/pause/seek | State machines + inputs |
 | Ecosystem | Massive (LottieFiles, AE) | Growing (Rive editor) |
 | **Verdict for AI gen** | **Winner** | Binary format = blocker |
+
+### Animation capabilities
+
+| Capability | Lottie | Rive |
+|-----------|--------|------|
+| Shape animation (scale, rotate, position, opacity) | ✓ | ✓ |
+| Path morphing, trim paths | ✓ | ✓ |
+| Color transitions | ✓ | ✓ |
+| Multi-layer compositions | ✓ | ✓ |
+| Masking, mattes | ✓ | ✓ |
+| Easing curves | ✓ | ✓ |
+| State machines (hover, click, drag → states) | ✗ | ✓ |
+| Skeletal/bone animation | ✗ | ✓ |
+| Mesh deformation | ✗ | ✓ |
+| Runtime input (eyes follow cursor, sliders) | ✗ | ✓ |
+
+Lottie covers ~90% of real-world animation needs (loading spinners, icon animations, waveforms, transitions, micro-interactions). The 10% Rive wins on — interactivity, skeletal animation, mesh deformation — requires an interactive editor to wire up, not something generatable from a text prompt.
 
 ## Architecture
 
