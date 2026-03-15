@@ -34,6 +34,8 @@ npm run ci                     # typecheck + test
 ```bash
 npx tsx src/index.ts generate "pulsing circle"                        # Static animation (.json)
 npx tsx src/index.ts generate "toggle switch" --interactive           # Interactive state machine (.lottie)
+npx tsx src/index.ts refine output/file.json "make it faster"         # Refine existing animation
+npx tsx src/index.ts refine output/file.lottie "add bounce" -o out.lottie  # Refine with custom output
 npx tsx src/index.ts preview output/file.json                        # Preview Lottie JSON
 npx tsx src/index.ts preview output/file.lottie                      # Preview dotLottie
 npx tsx src/index.ts validate output/file.json                       # Validate Lottie JSON
@@ -50,7 +52,7 @@ src/
   state-machine-validator.ts      — State machine structural validation
   validator.ts                    — Lottie JSON validation + auto-fix
   preview.ts                      — Browser preview (static + interactive)
-  utils.ts                        — Shared helpers (JSON extraction, slugify)
+  utils.ts                        — Shared helpers (JSON extraction, slugify, versioned paths)
   providers/
     registry.ts                   — Provider detection + selection
     claude.ts                     — Claude Code CLI provider
@@ -84,6 +86,7 @@ examples/
 - **Interactive mode**: `--interactive` flag → multi-animation envelope + state machine → .lottie ZIP
 - **State machine validation**: initial state, animation refs, transition targets, guard/input refs
 - **dotLottie packaging**: @dotlottie/dotlottie-js for .lottie ZIP creation and reading
+- **Refinement**: `refine` command reads existing output, sends current JSON + instruction to AI, writes versioned output (e.g. `anim-v2.json`)
 
 ## DO
 
