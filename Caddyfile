@@ -1,0 +1,25 @@
+www.kin3o.com {
+	redir https://kin3o.com{uri} permanent
+}
+
+kin3o.com {
+	root * /home/afromero/kin3o/landing
+	file_server
+
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	header /assets/* {
+		Cache-Control "public, max-age=31536000, immutable"
+	}
+
+	handle_errors {
+		rewrite * /index.html
+		file_server
+	}
+}
