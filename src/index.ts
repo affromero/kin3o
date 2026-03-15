@@ -12,6 +12,7 @@ import { extractJson, extractInteractiveJson, slugify, ensureOutputDir, nextVers
 import { searchAnimations, featuredAnimations, popularAnimations, recentAnimations, resolveTarget, createLoginToken, pollForAccessToken, createUploadRequest, uploadFile, publishAnimation } from './marketplace.js';
 import { openSearchResults } from './marketplace-preview.js';
 import { loadAuthToken, loadAuthExpiry, saveAuthToken, clearAuthToken } from './marketplace-auth.js';
+import { startViewServer } from './view.js';
 
 const program = new Command();
 
@@ -301,6 +302,39 @@ program
       console.error(`Failed to preview: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
+  });
+
+program
+  .command('view <file>')
+  .description('Live preview with hot reload (file watcher + auto-reload)')
+  .option('--port <n>', 'Port number (auto-selects if omitted)')
+  .action(async (file: string, options: { port?: string }) => {
+    const resolvedPath = resolve(file);
+
+    if (!existsSync(resolvedPath)) {
+      console.error(`  ✗ File not found: ${resolvedPath}`);
+      process.exit(1);
+    }
+
+    const ext = resolvedPath.split('.').pop()?.toLowerCase();
+    if (ext !== 'json' && ext !== 'lottie') {
+      console.error('  ✗ Unsupported file type. Use .json or .lottie');
+      process.exit(1);
+    }
+
+    const port = options.port ? parseInt(options.port, 10) : undefined;
+
+    console.log('\nkin3o — Live preview');
+    const server = await startViewServer(resolvedPath, { port });
+    console.log(`  ✓ Serving ${file}`);
+    console.log(`  ✓ ${server.url}`);
+    console.log('  Watching for changes... (Ctrl+C to stop)\n');
+
+    process.on('SIGINT', () => {
+      server.close();
+      console.log('\n  ✓ Server stopped');
+      process.exit(0);
+    });
   });
 
 program
