@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kin3o.com/sitemap.xml
