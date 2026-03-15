@@ -58,6 +58,15 @@ kin3o preview output/file.lottie                       # Preview dotLottie
 kin3o validate output/file.json                        # Validate Lottie JSON
 kin3o validate output/file.lottie                      # Validate dotLottie
 kin3o providers                                         # List AI providers
+kin3o search "loading spinner"                          # Search LottieFiles marketplace
+kin3o search --featured                                 # Browse featured animations
+kin3o search --popular --limit 10                       # Popular animations (limit 10)
+kin3o search "button" --no-browser                      # Terminal table output
+kin3o download <uuid>                                   # Download animation by UUID
+kin3o download <url> --lottie                           # Download .lottie format
+kin3o login                                             # Authenticate with LottieFiles
+kin3o logout                                            # Clear stored auth token
+kin3o publish output/file.json --name "My Anim" --tags "ui,loader"  # Publish to marketplace
 ```
 
 ## Architecture
@@ -69,6 +78,9 @@ src/
   state-machine-validator.ts      — State machine structural validation
   validator.ts                    — Lottie JSON validation + auto-fix
   preview.ts                      — Browser preview (static + interactive)
+  marketplace.ts                  — LottieFiles GraphQL API client (search/download/publish)
+  marketplace-preview.ts          — Search results HTML generation + browser open
+  marketplace-auth.ts             — Auth token persistence (~/.kin3o/auth.json)
   utils.ts                        — Shared helpers (JSON extraction, slugify, versioned paths)
   brand.ts                        — Brand tokens (colors, fonts, gradients)
   providers/
@@ -87,6 +99,7 @@ src/
 preview/
   template.html                   — Static Lottie preview (lottie-web)
   template-interactive.html       — Interactive dotLottie preview (dotlottie-web)
+  template-search.html            — Marketplace search results grid (lottie-web)
 landing/
   index.html                      — Landing page (kin3o.com)
 examples/
@@ -112,6 +125,9 @@ examples/
 - **dotLottie packaging**: @dotlottie/dotlottie-js for .lottie ZIP creation and reading
 - **Prompt barrel**: all prompts/examples/tokens imported via `src/prompts/index.ts`
 - **Refinement**: `refine` command reads existing output, sends current JSON + instruction to AI, writes versioned output (e.g. `anim-v2.json`)
+- **Marketplace**: LottieFiles GraphQL API at `graphql.lottiefiles.com` — search/browse/download (no auth), publish (auth required)
+- **Target resolution**: download accepts UUID, LottieFiles URL, or CDN URL — `resolveTarget()` normalizes all formats
+- **Auth flow**: `createLoginToken` → browser login → poll `tokenLogin` → save to `~/.kin3o/auth.json`
 
 ## DO
 

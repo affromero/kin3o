@@ -9,6 +9,9 @@ import { validateStateMachine } from './state-machine-validator.js';
 import { openPreview, openDotLottiePreview } from './preview.js';
 import { writeDotLottie, readDotLottie } from './packager.js';
 import { extractJson, extractInteractiveJson, slugify, ensureOutputDir, nextVersionedPath } from './utils.js';
+import { searchAnimations, featuredAnimations, popularAnimations, recentAnimations, resolveTarget, createLoginToken, pollForAccessToken, createUploadRequest, uploadFile, publishAnimation } from './marketplace.js';
+import { openSearchResults } from './marketplace-preview.js';
+import { loadAuthToken, loadAuthExpiry, saveAuthToken, clearAuthToken } from './marketplace-auth.js';
 
 const program = new Command();
 
@@ -368,6 +371,297 @@ program
       }
     } catch (err) {
       console.error(`Failed to validate: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+  });
+
+// --- Marketplace commands ---
+
+interface SearchOptions {
+  featured: boolean;
+  popular: boolean;
+  recent: boolean;
+  limit: string;
+  browser: boolean;
+}
+
+program
+  .command('search [query]')
+  .description('Search LottieFiles marketplace for animations')
+  .option('--featured', 'Show featured animations', false)
+  .option('--popular', 'Show popular animations', false)
+  .option('--recent', 'Show recent animations', false)
+  .option('--limit <n>', 'Number of results', '20')
+  .option('--no-browser', 'Print results to terminal instead')
+  .action(async (query: string | undefined, options: SearchOptions) => {
+    const limit = parseInt(options.limit, 10) || 20;
+    const isBrowse = options.featured || options.popular || options.recent;
+
+    if (!query && !isBrowse) {
+      console.error('  ✗ Provide a search query or use --featured, --popular, or --recent');
+      process.exit(1);
+    }
+
+    console.log('\nkin3o — Searching LottieFiles...');
+
+    try {
+      let result;
+      let mode: 'search' | 'featured' | 'popular' | 'recent';
+
+      if (options.featured) {
+        mode = 'featured';
+        result = await featuredAnimations(limit);
+      } else if (options.popular) {
+        mode = 'popular';
+        result = await popularAnimations(limit);
+      } else if (options.recent) {
+        mode = 'recent';
+        result = await recentAnimations(limit);
+      } else {
+        mode = 'search';
+        result = await searchAnimations(query!, { first: limit });
+      }
+
+      console.log(`  ✓ Found ${result.totalCount} animations${query ? ` for "${query}"` : ''}`);
+
+      if (result.animations.length === 0) {
+        console.log('  No results found.\n');
+        return;
+      }
+
+      if (!options.browser) {
+        // Terminal table output
+        console.log('');
+        const header = '  Name                              Author          UUID             Likes  Downloads';
+        console.log(header);
+        console.log('  ' + '─'.repeat(header.length - 2));
+
+        for (const anim of result.animations) {
+          const name = (anim.name || '').slice(0, 32).padEnd(34);
+          const author = (anim.createdBy?.username || 'Unknown').slice(0, 14).padEnd(16);
+          const uuid = anim.uuid.slice(0, 14).padEnd(17);
+          const likes = String(anim.likesCount).padStart(5);
+          const dl = String(anim.downloads ?? 0).padStart(10);
+          console.log(`  ${name}${author}${uuid}${likes}${dl}`);
+        }
+
+        console.log('');
+      } else {
+        const previewPath = await openSearchResults(result.animations, {
+          query: query || '',
+          totalCount: result.totalCount,
+          mode,
+        });
+        console.log(`  ✓ Results opened in browser: ${previewPath}`);
+      }
+
+      console.log('  Tip: Run "kin3o download <uuid>" to save an animation to output/\n');
+    } catch (err) {
+      console.error(`  ✗ Search failed: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+  });
+
+interface DownloadOptions {
+  output?: string;
+  preview: boolean;
+  lottie: boolean;
+}
+
+program
+  .command('download <target>')
+  .description('Download an animation from LottieFiles (UUID, URL, or CDN link)')
+  .option('-o, --output <path>', 'Output file path')
+  .option('--no-preview', 'Skip preview')
+  .option('--lottie', 'Download .lottie format instead of .json', false)
+  .action(async (target: string, options: DownloadOptions) => {
+    console.log('\nkin3o — Downloading from LottieFiles...');
+
+    try {
+      const resolved = await resolveTarget(target, options.lottie);
+
+      if (options.lottie && resolved.lottieBuffer) {
+        const outputDir = ensureOutputDir();
+        const slug = resolved.meta ? slugify(resolved.meta.name) : 'animation';
+        const timestamp = Math.floor(Date.now() / 1000);
+        const outputPath = options.output
+          ? join(outputDir, options.output)
+          : join(outputDir, `${slug}-${timestamp}.lottie`);
+
+        writeFileSync(outputPath, resolved.lottieBuffer);
+
+        if (resolved.meta) {
+          console.log(`  ✓ Downloaded: ${resolved.meta.name} by ${resolved.meta.createdBy?.username ?? 'Unknown'}`);
+        }
+        console.log(`  ✓ Written to ${outputPath}`);
+
+        if (options.preview) {
+          const previewPath = await openDotLottiePreview(resolved.lottieBuffer);
+          console.log(`  ✓ Preview opened: ${previewPath}`);
+        }
+
+        console.log(`  Tip: Run "kin3o refine ${outputPath} 'your instruction'" to modify\n`);
+        return;
+      }
+
+      // JSON download
+      const lottieJson = resolved.json;
+
+      const validation = validateLottie(lottieJson);
+      if (!validation.valid) {
+        console.error('  ⚠ Downloaded Lottie has validation errors:');
+        validation.errors.forEach(e => console.error(`    - ${e}`));
+      }
+
+      let finalJson = lottieJson;
+      if (validation.warnings.length > 0) {
+        finalJson = autoFix(lottieJson) as object;
+        const fixes = validation.warnings.length;
+        console.log(`  ✓ Valid Lottie JSON (${fixes} auto-fix${fixes > 1 ? 'es' : ''}: ${validation.warnings.join(', ')})`);
+      } else if (validation.valid) {
+        console.log('  ✓ Valid Lottie JSON');
+      }
+
+      const outputDir = ensureOutputDir();
+      const slug = resolved.meta ? slugify(resolved.meta.name) : 'animation';
+      const timestamp = Math.floor(Date.now() / 1000);
+      const outputPath = options.output
+        ? join(outputDir, options.output)
+        : join(outputDir, `${slug}-${timestamp}.json`);
+
+      writeFileSync(outputPath, JSON.stringify(finalJson, null, 2), 'utf-8');
+
+      if (resolved.meta) {
+        console.log(`  ✓ Downloaded: ${resolved.meta.name} by ${resolved.meta.createdBy?.username ?? 'Unknown'}`);
+      }
+      console.log(`  ✓ Written to ${outputPath}`);
+
+      if (options.preview) {
+        const previewPath = await openPreview(finalJson);
+        console.log(`  ✓ Preview opened: ${previewPath}`);
+      }
+
+      console.log(`  Tip: Run "kin3o refine ${outputPath} 'your instruction'" to modify\n`);
+    } catch (err) {
+      console.error(`  ✗ Download failed: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+  });
+
+// --- Auth + Publish commands ---
+
+program
+  .command('login')
+  .description('Log in to LottieFiles to enable publishing')
+  .action(async () => {
+    const existing = loadAuthToken();
+    if (existing) {
+      const expiry = loadAuthExpiry();
+      console.log(`  ✓ Already logged in (expires ${expiry ?? 'unknown'})`);
+      return;
+    }
+
+    const appKey = process.env['LOTTIEFILES_APP_KEY'];
+    if (!appKey) {
+      console.error('  ✗ LOTTIEFILES_APP_KEY environment variable is required.');
+      console.error('    Set it to your LottieFiles app key to enable login.');
+      process.exit(1);
+    }
+
+    console.log('\nkin3o — Logging in to LottieFiles...');
+
+    try {
+      const { loginUrl, token } = await createLoginToken(appKey);
+
+      const open = (await import('open')).default;
+      await open(loginUrl);
+
+      console.log('  Waiting for authentication... (complete login in browser)');
+      const { accessToken, expiresAt } = await pollForAccessToken(token);
+
+      saveAuthToken(accessToken, expiresAt);
+      console.log(`  ✓ Logged in! Token expires ${expiresAt}\n`);
+    } catch (err) {
+      console.error(`  ✗ Login failed: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('logout')
+  .description('Log out from LottieFiles')
+  .action(() => {
+    clearAuthToken();
+    console.log('  ✓ Logged out');
+  });
+
+interface PublishOptions {
+  name: string;
+  tags: string;
+  description?: string;
+}
+
+program
+  .command('publish <file>')
+  .description('Publish an animation to LottieFiles marketplace')
+  .requiredOption('--name <name>', 'Animation name')
+  .requiredOption('--tags <tags>', 'Comma-separated tags')
+  .option('--description <desc>', 'Optional description')
+  .action(async (file: string, options: PublishOptions) => {
+    const token = loadAuthToken();
+    if (!token) {
+      console.error('  ✗ Not logged in. Run "kin3o login" first.');
+      process.exit(1);
+    }
+
+    const resolvedPath = resolve(file);
+    if (!existsSync(resolvedPath)) {
+      console.error(`  ✗ File not found: ${resolvedPath}`);
+      process.exit(1);
+    }
+
+    console.log('\nkin3o — Publishing to LottieFiles...');
+
+    try {
+      // Validate the file
+      const isLottie = file.endsWith('.lottie');
+      if (!isLottie) {
+        const raw = readFileSync(resolvedPath, 'utf-8');
+        const json = JSON.parse(raw) as unknown;
+        const validation = validateLottie(json);
+        if (!validation.valid) {
+          console.error('  ✗ Invalid Lottie JSON:');
+          validation.errors.forEach(e => console.error(`    - ${e}`));
+          process.exit(1);
+        }
+        console.log('  ✓ Validation passed');
+      }
+
+      const fileBuffer = readFileSync(resolvedPath);
+      const type = isLottie ? 'DOT_LOTTIE' : 'LOTTIE';
+      const filename = resolvedPath.split('/').pop() ?? 'animation.json';
+
+      // Create upload request
+      const { requestId, presignedUrl } = await createUploadRequest(token, filename, type);
+      console.log('  ✓ Upload request created');
+
+      // Upload file
+      await uploadFile(presignedUrl, fileBuffer);
+      console.log('  ✓ File uploaded');
+
+      // Create animation entry
+      const tags = options.tags.split(',').map(t => t.trim()).filter(Boolean);
+      const result = await publishAnimation(token, {
+        name: options.name,
+        requestId,
+        tags,
+        description: options.description,
+      });
+
+      console.log(`  ✓ Published: ${options.name}`);
+      console.log(`  ✓ View at: ${result.url}\n`);
+    } catch (err) {
+      console.error(`  ✗ Publish failed: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
   });
