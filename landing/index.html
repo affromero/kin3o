@@ -557,6 +557,33 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   color:var(--accent);
 }
 
+/* ── Marketplace ── */
+.mkt-s{padding:8rem 0}
+.mkt-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
+.mkt-badge{
+  display:inline-block;
+  background:rgba(90,158,111,.15);
+  color:var(--green);
+  font-size:.7rem;font-weight:600;
+  padding:.25rem .75rem;border-radius:999px;
+  letter-spacing:.04em;text-transform:uppercase;
+  margin-bottom:1rem;
+}
+.mkt-flow{
+  display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1.5rem;align-items:center;
+}
+.mkt-flow span{
+  font-family:var(--mono);font-size:.8rem;
+  padding:.35rem .75rem;border-radius:6px;
+  background:var(--card);border:1px solid var(--line);color:var(--text-2);
+}
+.mkt-flow .mkt-arrow{
+  background:none;border:none;color:var(--text-3);font-size:.9rem;padding:0 .15rem;
+}
+@media(max-width:900px){
+  .mkt-grid{grid-template-columns:1fr}
+}
+
 /* ── Compare (Fix 11: split decision card, Fix 12) ── */
 .cmp-s{padding:8rem 0}
 
@@ -686,6 +713,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
     <div class="nav-r">
       <a href="#showcase">Showcase</a>
       <a href="#cli">CLI</a>
+      <a href="#marketplace">Marketplace</a>
       <a href="#compare">Compare</a>
       <a href="#start" class="nav-cta">Get Started</a>
     </div>
@@ -696,7 +724,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   <div class="hero-l">
     <h1>Describe it.<br><em>Animate it.</em></h1>
     <p class="hero-p">
-      Generate production-ready Lottie animations and interactive state machines from your terminal.
+      Generate production-ready Lottie animations from your terminal, or search and remix from 122K+ community animations on the LottieFiles marketplace.
       Uses your existing Claude or Codex subscription. No credits, no editors.
     </p>
     <div class="cmd">
@@ -919,6 +947,41 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   </div>
 </section>
 
+<!-- Marketplace -->
+<section class="mkt-s" id="marketplace">
+  <div class="w">
+    <div class="mkt-grid">
+      <div>
+        <span class="mkt-badge">LottieFiles integration</span>
+        <h2 class="sh">Search, download, publish</h2>
+        <p>Browse 122K+ community animations on the <a href="https://lottiefiles.com" style="color:var(--green)">LottieFiles</a> marketplace. Download, remix with AI, and publish back &mdash; all from your terminal.</p>
+        <div class="mkt-flow">
+          <span>search</span>
+          <span class="mkt-arrow">&rarr;</span>
+          <span>download</span>
+          <span class="mkt-arrow">&rarr;</span>
+          <span>refine</span>
+          <span class="mkt-arrow">&rarr;</span>
+          <span>publish</span>
+        </div>
+      </div>
+      <div class="term">
+        <div class="term-bar"><span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span></div>
+        <div class="term-body">
+          <div class="term-line"><span class="term-p">$</span> kin3o search "loading spinner"</div>
+          <div class="term-line dim">&nbsp;</div>
+          <div class="term-line dim">kin3o — Searching LottieFiles...</div>
+          <div class="term-line"><span style="color:var(--green)">✓</span> Found 847 animations for "loading spinner"</div>
+          <div class="term-line dim">&nbsp;</div>
+          <div class="term-line"><span class="term-p">$</span> kin3o download abc12345</div>
+          <div class="term-line"><span style="color:var(--green)">✓</span> Downloaded: Spinner Dots by @designer</div>
+          <div class="term-line"><span style="color:var(--green)">✓</span> Written to output/spinner-dots.json</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Choose your tool -->
 <section class="cmp-s" id="compare">
   <div class="w">
@@ -935,6 +998,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
           <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> Using your existing Claude or Codex subscription</li>
           <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> Git-friendly JSON output &mdash; diffable and reviewable</li>
           <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> Customizable system prompts and design tokens</li>
+          <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> Search, download, and publish to the LottieFiles marketplace</li>
           <li><span class="cmp-icon cmp-icon-info">&#8599;</span> Works with the Lottie ecosystem &mdash; React, iOS, Android, After Effects</li>
         </ul>
       </div>
@@ -947,7 +1011,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
           </a>
           <a class="cmp-tool" href="https://lottiefiles.com">
             <div class="cmp-tool-name">LottieFiles <span class="arrow">&#8599;</span></div>
-            <div class="cmp-tool-desc">Massive animation library, community, Motion Copilot AI</div>
+            <div class="cmp-tool-desc">Massive animation library, community, Motion Copilot AI &mdash; kin3o integrates directly for search, download, and publish</div>
           </a>
           <a class="cmp-tool" href="https://www.lottielab.com">
             <div class="cmp-tool-name">Lottielab <span class="arrow">&#8599;</span></div>
@@ -971,7 +1035,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
       npx @afromero/kin3o generate "loading spinner"
     </div>
     <p class="end-foot">
-      <a href="https://github.com/affromero/kin3o">GitHub</a> &middot; MIT License &middot; Built with Claude
+      <a href="https://github.com/affromero/kin3o">GitHub</a> &middot; <a href="https://lottiefiles.com">LottieFiles</a> &middot; MIT License &middot; Built with Claude
     </p>
   </div>
 </section>
