@@ -3,3 +3,6 @@ dist/
 output/*.json
 output/*.html
 .DS_Store
+.env*
+*.pem
+*.key
