@@ -4,7 +4,7 @@
 
 **Text to Motion. From your terminal.**
 
-[![npm](https://img.shields.io/npm/v/kin3o)](https://www.npmjs.com/package/kin3o)
+[![npm](https://img.shields.io/npm/v/@afromero/kin3o)](https://www.npmjs.com/package/@afromero/kin3o)
 [![CI](https://github.com/affromero/kin3o/actions/workflows/ci.yml/badge.svg)](https://github.com/affromero/kin3o/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
@@ -41,7 +41,7 @@ Every motion design tool (Rive, LottieFiles, Hera) sandboxes its AI inside a wal
 
 ```bash
 # Install globally
-npm install -g kin3o
+npm install -g @afromero/kin3o
 
 # Generate a static animation
 kin3o generate "loading spinner with 3 dots"
@@ -53,7 +53,7 @@ kin3o generate "toggle switch with on/off states" --interactive
 Or use without installing:
 
 ```bash
-npx kin3o generate "pulsing circle"
+npx @afromero/kin3o generate "pulsing circle"
 ```
 
 ## CLI Usage
