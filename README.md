@@ -1,8 +1,17 @@
+<div align="center">
+
 # kin3o
 
-AI-powered Lottie animation generator. Turns natural language prompts into valid, playable Lottie JSON animations using Claude or Codex as the AI backend.
+**Text to Motion. From your terminal.**
 
-Named after *kinesis* (Greek: movement/motion).
+[![CI](https://github.com/affromero/kin3o/actions/workflows/ci.yml/badge.svg)](https://github.com/affromero/kin3o/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/affromero/kin3o/pulls)
+
+AI-powered Lottie animation generator. Turns natural language prompts into valid, playable Lottie JSON using your existing Claude or Codex subscription.
+
+</div>
 
 ## Why?
 
@@ -140,11 +149,3 @@ npm run typecheck    # Type check
 npm run test         # Run tests (node --test)
 npm run ci           # typecheck + test
 ```
-
-## Test Results
-
-_Run test prompts and record results here._
-
-| Prompt | Valid? | Plays? | Quality | Fidelity |
-|--------|--------|--------|---------|----------|
-| | | | | |
