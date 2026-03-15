@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kineo — Lottie Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  h1 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #888;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+  }
+  #animation-container {
+    width: 512px;
+    height: 512px;
+    max-width: 90vw;
+    max-height: 90vw;
+    background: #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  button {
+    background: #333;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+  }
+  button:hover { background: #444; }
+  button.active { background: #D97706; color: #fff; border-color: #D97706; }
+  .meta {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: #666;
+    text-align: center;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<h1>KINEO</h1>
+<div id="animation-container"></div>
+<div class="controls">
+  <button id="btn-play" class="active" onclick="togglePlay()">Pause</button>
+  <button id="btn-05x" onclick="setSpeed(0.5)">0.5x</button>
+  <button id="btn-1x" class="active" onclick="setSpeed(1)">1x</button>
+  <button id="btn-2x" onclick="setSpeed(2)">2x</button>
+  <button id="btn-loop" class="active" onclick="toggleLoop()">Loop</button>
+  <button onclick="copyJson()">Copy JSON</button>
+  <button onclick="downloadJson()">Download</button>
+</div>
+<div class="meta" id="meta"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script>
+  const animData = __ANIMATION_DATA__;
+  const anim = lottie.loadAnimation({
+    container: document.getElementById('animation-container'),
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+    animationData: animData,
+  });
+
+  const fps = animData.fr || 60;
+  const frames = (animData.op || 0) - (animData.ip || 0);
+  const duration = (frames / fps).toFixed(1);
+  document.getElementById('meta').innerHTML =
+    `${animData.w}×${animData.h}px · ${fps}fps · ${frames} frames · ${duration}s`;
+
+  let playing = true;
+  let looping = true;
+  let speed = 1;
+
+  function togglePlay() {
+    playing = !playing;
+    if (playing) { anim.play(); } else { anim.pause(); }
+    document.getElementById('btn-play').textContent = playing ? 'Pause' : 'Play';
+    document.getElementById('btn-play').classList.toggle('active', playing);
+  }
+
+  function setSpeed(s) {
+    speed = s;
+    anim.setSpeed(s);
+    document.getElementById('btn-05x').classList.toggle('active', s === 0.5);
+    document.getElementById('btn-1x').classList.toggle('active', s === 1);
+    document.getElementById('btn-2x').classList.toggle('active', s === 2);
+  }
+
+  function toggleLoop() {
+    looping = !looping;
+    anim.loop = looping;
+    document.getElementById('btn-loop').classList.toggle('active', looping);
+  }
+
+  function copyJson() {
+    navigator.clipboard.writeText(JSON.stringify(animData, null, 2));
+  }
+
+  function downloadJson() {
+    const blob = new Blob([JSON.stringify(animData, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'animation.json';
+    a.click();
+  }
+</script>
+</body>
+</html>

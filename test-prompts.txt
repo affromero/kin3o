@@ -1,0 +1,23 @@
+# Kineo Test Prompts
+# Run each with: npx tsx src/index.ts generate "<prompt>"
+
+## Simple (single element, basic animation)
+1. pulsing circle that breathes in and out
+2. loading spinner with 3 rotating dots
+3. checkmark that draws itself
+4. bouncing ball
+5. fading in and out square
+
+## Medium (multiple elements, coordinated animation)
+6. 5-bar audio waveform in amber color
+7. notification bell that shakes side to side
+8. three dots loading indicator that pulses sequentially
+9. play button that morphs into a pause button
+10. progress bar that fills from left to right
+
+## Hard (complex shapes, multiple animations)
+11. podcast microphone icon with sound waves radiating outward
+12. music equalizer with 7 bars at different frequencies
+13. heart that beats with a realistic two-pulse rhythm
+14. envelope that opens and a letter slides out
+15. circular progress indicator with a gradient trail

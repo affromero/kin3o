@@ -1,0 +1,23 @@
+{
+  "name": "kineo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "generate": "tsx src/index.ts generate",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx/esm --test 'src/**/*.test.ts'",
+    "ci": "npm run typecheck && npm run test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "commander": "^13.0.0",
+    "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}
