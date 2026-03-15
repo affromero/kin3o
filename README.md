@@ -138,7 +138,20 @@ Static:   prompt → provider.generate() → extractJson() → validateLottie() 
 Interactive: prompt → provider.generate() → extractInteractiveJson() → validate each animation + state machine → writeDotLottie() → openDotLottiePreview()
 ```
 
-Providers spawn CLI subprocesses (`claude --print`, `codex exec`) to leverage existing subscriptions. The system prompt includes a concise Lottie format spec + hand-crafted few-shot examples. Interactive mode generates a multi-animation envelope with a dotLottie state machine.
+Providers spawn CLI subprocesses (`claude --print`, `codex exec`) to leverage existing subscriptions. Interactive mode generates a multi-animation envelope with a dotLottie state machine.
+
+### Prompt System
+
+All prompts live in `src/prompts/` with a barrel export at `src/prompts/index.ts`:
+
+| Module | Purpose |
+|--------|---------|
+| `system.ts` | Static Lottie generation prompt + `LOTTIE_FORMAT_REFERENCE` |
+| `system-interactive.ts` | Interactive state machine prompt (imports shared ref) |
+| `examples.ts` | Few-shot: pulsing circle, waveform bars |
+| `examples-interactive.ts` | Few-shot: interactive button (idle/hover/pressed) |
+| `examples-mascot.ts` | kin3o mascot/logo (static + interactive) |
+| `tokens.ts` | Design token loader (hex → Lottie RGBA) |
 
 ## Development
 

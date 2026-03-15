@@ -57,10 +57,12 @@ src/
     codex.ts                      — Codex CLI provider
     anthropic.ts                  — Direct Anthropic API provider
   prompts/
+    index.ts                      — Barrel: single import for all prompts/examples/tokens
     system.ts                     — Static system prompt (exports LOTTIE_FORMAT_REFERENCE)
     system-interactive.ts         — Interactive system prompt (state machines)
-    examples.ts                   — Few-shot Lottie examples
+    examples.ts                   — Few-shot Lottie examples (pulsing circle, waveform)
     examples-interactive.ts       — Interactive button example (idle/hover/pressed)
+    examples-mascot.ts            — kin3o mascot/logo animation (static + interactive)
     tokens.ts                     — Design token loader
 preview/
   template.html                   — Static Lottie preview (lottie-web)
@@ -69,6 +71,8 @@ examples/
   pulse.json                      — Example static animation
   waveform.json                   — Example static animation
   interactive-button.lottie       — Example interactive animation
+  mascot.json                     — Static mascot/logo animation
+  mascot.lottie                   — Interactive mascot (hover state)
 ```
 
 ## Engineering Patterns

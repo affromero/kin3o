@@ -83,7 +83,9 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   color:var(--text-1);text-decoration:none;
   font-weight:500;letter-spacing:-.02em;
   font-variation-settings:'opsz' 32;
+  display:inline-flex;align-items:center;gap:.55rem;
 }
+.logo-mascot{width:28px;height:28px;flex-shrink:0}
 
 .nav-r{display:flex;gap:2rem;align-items:center}
 .nav-r a{
@@ -473,6 +475,69 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
 .code-body .tg{color:#B07070}
 .code-body .at{color:var(--accent)}
 
+/* ── State machines section ── */
+.sm-s{padding:7rem 0 2rem}
+
+.sm-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:clamp(2rem,5vw,5rem);
+  align-items:center;
+}
+
+.sm-intro .sh{margin-bottom:1rem}
+.sm-intro p{color:var(--text-3);max-width:420px;margin-bottom:2rem;line-height:1.8}
+
+.sm-term{
+  border-radius:22px;
+  background:linear-gradient(180deg,#0D1016 0%,#090B10 100%);
+  border:1px solid #252C38;
+  box-shadow:0 24px 60px rgba(0,0,0,.32);
+  overflow:hidden;
+  font-family:var(--mono);font-size:.76rem;line-height:2;
+}
+.sm-term .term-chrome{
+  padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);
+  display:flex;gap:.4rem;
+}
+.sm-term .term-body{padding:1.25rem 1.5rem}
+
+.sm-preview{
+  display:flex;flex-direction:column;align-items:center;gap:1.5rem;
+}
+
+.sm-anim-wrap{
+  width:180px;height:180px;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(214,179,106,.14), transparent 50%),
+    var(--card);
+  border:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 16px 48px rgba(0,0,0,.25);
+}
+.sm-anim-inner{width:120px;height:120px}
+
+.sm-states{
+  display:flex;gap:.5rem;
+}
+.sm-state{
+  font-family:var(--mono);
+  font-size:.68rem;
+  font-weight:500;
+  padding:.45rem .9rem;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:var(--raised);
+  color:var(--text-3);
+  transition:all .25s;
+}
+.sm-state.on{
+  border-color:var(--accent-border);
+  background:rgba(214,179,106,.08);
+  color:var(--accent);
+}
+
 /* ── Compare (Fix 11: split decision card, Fix 12) ── */
 .cmp-s{padding:8rem 0}
 
@@ -554,6 +619,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   .hero-stage{max-width:400px}
   .term-grid{grid-template-columns:1fr}
   .term-meta{grid-template-columns:repeat(2,1fr)}
+  .sm-grid{grid-template-columns:1fr}
   .cmp-split{grid-template-columns:1fr}
   .nav-r a:not(.nav-cta){display:none}
   .code-header{flex-direction:column;align-items:flex-start;gap:.5rem;padding-top:1rem}
@@ -577,7 +643,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
 
 <nav>
   <div class="w">
-    <a href="#" class="logo">kin3o</a>
+    <a href="#" class="logo"><div class="logo-mascot" id="logo-mascot"></div>kin3o</a>
     <div class="nav-r">
       <a href="#showcase">Showcase</a>
       <a href="#cli">CLI</a>
@@ -591,12 +657,12 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   <div class="hero-l">
     <h1>Describe it.<br><em>Animate it.</em></h1>
     <p class="hero-p">
-      Generate production-ready Lottie animations from your terminal.
+      Generate production-ready Lottie animations and interactive state machines from your terminal.
       Uses your existing Claude or Codex subscription. No credits, no editors.
     </p>
     <div class="cmd">
       <span class="cmd-p">$</span>
-      npx kin3o generate "loading spinner"
+      npx kin3o generate "button" --interactive
     </div>
   </div>
   <div class="hero-r">
@@ -683,7 +749,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   <div class="w">
     <div class="term-grid">
       <div class="term-intro">
-        <h2 class="sh">One command,<br>valid Lottie</h2>
+        <h2 class="sh">One command,<br>motion + interaction</h2>
         <p>Describe the animation. kin3o generates validated JSON and opens a live preview. Drop the file into any frontend.</p>
         <ul class="platforms">
           <li>React &mdash; lottie-react</li>
@@ -779,6 +845,38 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
   </div>
 </section>
 
+<!-- Interactive state machines -->
+<section class="sm-s">
+  <div class="w">
+    <div class="sm-grid">
+      <div class="sm-intro">
+        <h2 class="sh">State machines,<br>from text</h2>
+        <p>Generate interactive animations with hover, click, and tap states &mdash; all from a single prompt.</p>
+        <div class="sm-term">
+          <div class="term-chrome"><i></i><i></i><i></i></div>
+          <div class="term-body">
+            <div class="tl"><span class="tp">$</span> <span class="tc">npx kin3o generate</span> <span class="ts">"toggle switch"</span> <span class="td">--interactive</span></div>
+            <div class="tl"><br></div>
+            <div class="tl"><span class="tok">&nbsp;&nbsp;&#10003;</span> <span class="td">Extracted 3 animations: idle, hover, pressed</span></div>
+            <div class="tl"><span class="tok">&nbsp;&nbsp;&#10003;</span> <span class="td">State machine valid</span></div>
+            <div class="tl"><span class="tok">&nbsp;&nbsp;&#10003;</span> <span class="td">Written to toggle-switch.lottie</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sm-preview">
+        <div class="sm-anim-wrap">
+          <div class="sm-anim-inner" id="sm-mascot"></div>
+        </div>
+        <div class="sm-states">
+          <span class="sm-state on">idle</span>
+          <span class="sm-state">hover</span>
+          <span class="sm-state">pressed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Fix 11: Split decision card -->
 <section class="cmp-s" id="compare">
   <div class="w">
@@ -794,6 +892,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
           <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> CLI workflow &mdash; generate from any terminal</li>
           <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> $0 cost &mdash; uses your existing Claude or Codex subscription</li>
           <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> Full system prompt control &mdash; customize generation context</li>
+          <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> State machines &mdash; interactive .lottie with hover, click, tap transitions</li>
           <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> Shapes, paths, easing, color transitions</li>
           <li><span class="cmp-icon cmp-icon-info">&#8599;</span> Massive ecosystem &mdash; LottieFiles, After Effects, React, iOS, Android</li>
         </ul>
@@ -801,7 +900,7 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
       <div class="cmp-panel">
         <div class="cmp-panel-title">Where Rive wins</div>
         <ul class="cmp-list">
-          <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> State machines &mdash; interactive, multi-state animations</li>
+          <li><span class="cmp-icon cmp-icon-no" style="opacity:.45">&#10007;</span> <s style="opacity:.5">State machines &mdash; interactive, multi-state animations</s> <span style="font-size:.72rem;color:var(--accent);margin-left:.35rem">kin3o now supports these</span></li>
           <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> Skeletal and mesh deformation</li>
           <li><span class="cmp-icon cmp-icon-yes">&#10003;</span> Visual editor with AI built in</li>
           <li><span class="cmp-icon cmp-icon-no">&#10007;</span> Per-credit pricing model</li>
@@ -834,8 +933,10 @@ const B={"v":"5.5.2","fr":60,"ip":0,"op":180,"w":512,"h":512,"ddd":0,"assets":[]
 
 const P={"v":"5.5.2","fr":60,"ip":0,"op":180,"w":512,"h":512,"ddd":0,"assets":[],"layers":[{"ty":4,"ind":0,"nm":"Breathing Circle","ip":0,"op":180,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[256,256]},"s":{"a":1,"k":[{"t":0,"s":[80,80],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":90,"s":[120,120],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":180,"s":[80,80]}]},"r":{"a":0,"k":0},"o":{"a":1,"k":[{"t":0,"s":[65],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":90,"s":[100],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":180,"s":[65]}]}},"shapes":[{"ty":"gr","nm":"Circle Group","it":[{"ty":"el","nm":"Ellipse","p":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[0.18,0.6,0.9,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0}]};
 
+const M={"v":"5.5.2","fr":60,"ip":0,"op":120,"w":512,"h":512,"ddd":0,"assets":[],"layers":[{"ty":4,"ind":0,"nm":"Orb","ip":0,"op":120,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[256,256]},"s":{"a":1,"k":[{"t":0,"s":[100,100],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[100,100]}]},"r":{"a":0,"k":0},"o":{"a":1,"k":[{"t":0,"s":[80],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[80]}]}},"shapes":[{"ty":"gr","nm":"Circle","it":[{"ty":"el","nm":"Ellipse","p":{"a":0,"k":[0,0]},"s":{"a":0,"k":[80,80]}},{"ty":"fl","nm":"Fill","c":{"a":0,"k":[0.839,0.722,0.416,1]},"o":{"a":0,"k":100},"r":1},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}],"bm":0},{"ty":4,"ind":1,"nm":"Arcs","ip":0,"op":120,"st":0,"ddd":0,"ks":{"a":{"a":0,"k":[0,0]},"p":{"a":0,"k":[256,256]},"s":{"a":1,"k":[{"t":0,"s":[95,95],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[95,95]}]},"r":{"a":1,"k":[{"t":0,"s":[0],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":120,"s":[0]}]},"o":{"a":0,"k":100}},"shapes":[{"ty":"gr","nm":"Arc r70","it":[{"ty":"sh","nm":"Arc Path","ks":{"a":0,"k":{"c":false,"v":[[-70,0],[0,-70],[70,0]],"i":[[0,0],[-38.64,0],[0,0]],"o":[[0,-38.64],[38.64,0],[0,0]]}}},{"ty":"st","nm":"Stroke","c":{"a":0,"k":[0.839,0.722,0.416,1]},"o":{"a":0,"k":70},"w":{"a":0,"k":4},"lc":2,"lj":2},{"ty":"tm","nm":"Trim","s":{"a":0,"k":0},"e":{"a":1,"k":[{"t":0,"s":[0],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":40,"s":[100]}]},"o":{"a":0,"k":0}},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":-90},"o":{"a":0,"k":100}}]},{"ty":"gr","nm":"Arc r95","it":[{"ty":"sh","nm":"Arc Path","ks":{"a":0,"k":{"c":false,"v":[[-95,0],[0,-95],[95,0]],"i":[[0,0],[-52.44,0],[0,0]],"o":[[0,-52.44],[52.44,0],[0,0]]}}},{"ty":"st","nm":"Stroke","c":{"a":0,"k":[0.839,0.722,0.416,1]},"o":{"a":0,"k":50},"w":{"a":0,"k":3},"lc":2,"lj":2},{"ty":"tm","nm":"Trim","s":{"a":0,"k":0},"e":{"a":1,"k":[{"t":10,"s":[0],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":50,"s":[100]}]},"o":{"a":0,"k":0}},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":-90},"o":{"a":0,"k":100}}]},{"ty":"gr","nm":"Arc r120","it":[{"ty":"sh","nm":"Arc Path","ks":{"a":0,"k":{"c":false,"v":[[-120,0],[0,-120],[120,0]],"i":[[0,0],[-66.24,0],[0,0]],"o":[[0,-66.24],[66.24,0],[0,0]]}}},{"ty":"st","nm":"Stroke","c":{"a":0,"k":[0.839,0.722,0.416,1]},"o":{"a":0,"k":30},"w":{"a":0,"k":2},"lc":2,"lj":2},{"ty":"tm","nm":"Trim","s":{"a":0,"k":0},"e":{"a":1,"k":[{"t":20,"s":[0],"o":{"x":[0.42],"y":[0]},"i":{"x":[0.58],"y":[1]}},{"t":60,"s":[100]}]},"o":{"a":0,"k":0}},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":-90},"o":{"a":0,"k":100}}]}],"bm":0}]};
+
 function L(id,d){lottie.loadAnimation({container:document.getElementById(id),renderer:'svg',loop:!0,autoplay:!0,animationData:JSON.parse(JSON.stringify(d))})}
-L('hero-anim',W);L('c0',W);L('c1',B);L('c2',P);
+L('hero-anim',W);L('c0',W);L('c1',B);L('c2',P);L('logo-mascot',M);L('sm-mascot',M);
 
 // Carousel (preserved logic, updated selectors for new layout)
 let cur=0,timer,prog;const DUR=6000,INT=30,N=3;
@@ -856,6 +957,18 @@ reset();
 const cw=document.getElementById('carousel');
 cw.addEventListener('mouseenter',()=>{clearInterval(prog);clearTimeout(timer)});
 cw.addEventListener('mouseleave',reset);
+
+// State machine chip interaction
+(function(){
+  const wrap=document.querySelector('.sm-anim-wrap');
+  const chips=document.querySelectorAll('.sm-state');
+  if(!wrap||!chips.length)return;
+  function setActive(i){chips.forEach((c,j)=>c.classList.toggle('on',j===i))}
+  wrap.addEventListener('mouseenter',()=>setActive(1));
+  wrap.addEventListener('mousedown',()=>setActive(2));
+  wrap.addEventListener('mouseup',()=>setActive(1));
+  wrap.addEventListener('mouseleave',()=>setActive(0));
+})();
 
 // Tab switching for code section (Fix 10)
 document.querySelectorAll('.code-tab').forEach(tab=>{
