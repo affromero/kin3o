@@ -18,7 +18,7 @@ AI-powered Lottie animation generator. Turns natural language prompts into valid
 
 Great tools like [LottieFiles](https://lottiefiles.com), [Lottielab](https://www.lottielab.com), and [Rive](https://rive.app) offer powerful visual editors, massive animation libraries, and team collaboration — if you need a full design workflow, they're excellent choices.
 
-kin3o takes a different approach: it's a CLI tool for developers who want to generate animations from their terminal using AI subscriptions they already pay for. No editor, no credits, no context switching — just describe what you want and get valid Lottie JSON.
+kin3o takes a different approach: it's a CLI tool for developers who want to generate animations from their terminal using AI subscriptions they already pay for. Search and download from the [LottieFiles](https://lottiefiles.com) marketplace (122K+ community animations), refine with AI, and publish back — all without leaving the terminal.
 
 ## Choosing the right tool
 
@@ -28,7 +28,7 @@ There are great tools for different animation workflows. Here's an honest look a
 |------|----------|-----------|
 | **kin3o** | Developers who want animations from their terminal | CLI-first, uses your existing AI subscription, open source, git-friendly JSON output, interactive state machines from text |
 | [**Rive**](https://rive.app) | Complex interactive animations with a visual editor | Skeletal animation, mesh deformation, runtime inputs (cursor tracking, sliders), built-in state machines, beautiful visual editor |
-| [**LottieFiles**](https://lottiefiles.com) | Finding and sharing animations | Massive community library, Motion Copilot AI, After Effects integration, team collaboration |
+| [**LottieFiles**](https://lottiefiles.com) | Finding and sharing animations | Massive community library, Motion Copilot AI, After Effects integration, team collaboration — kin3o integrates directly for search, download, and publish |
 | [**Lottielab**](https://www.lottielab.com) | Designing Lottie animations visually | Polished editor with timeline and keyframes, team collaboration, export to Lottie JSON |
 | [**Recraft**](https://www.recraft.ai) | AI-powered design with animation export | Visual AI design tool, vector and animation output, broad creative capabilities |
 
@@ -78,6 +78,21 @@ kin3o validate output/animation.lottie
 
 # List available AI providers
 kin3o providers
+
+# Marketplace (LottieFiles)
+kin3o search "loading spinner"                         # Search marketplace
+kin3o search --featured --limit 10                     # Browse featured
+kin3o search --popular                                 # Browse popular
+kin3o search "button" --no-browser                     # Terminal output only
+kin3o download abc12345                                # Download by UUID
+kin3o download <url> --lottie                          # Download as .lottie
+kin3o login                                            # Authenticate for publishing
+kin3o publish output/anim.json --name "My Anim" --tags "loading,ui"
+kin3o logout                                           # Clear auth token
+
+# Live preview with hot reload
+kin3o view output/animation.json                       # File watcher + auto-reload
+kin3o view output/animation.lottie --port 3000         # Specific port
 ```
 
 ### Options
@@ -90,6 +105,13 @@ kin3o providers
 | `--no-preview` | Skip browser preview |
 | `-i, --interactive` | Generate interactive state machine (`.lottie` output) |
 | `-t, --tokens <path>` | Design tokens JSON or `sotto` preset |
+| `--featured` | Browse featured marketplace animations |
+| `--popular` | Browse popular marketplace animations |
+| `--recent` | Browse recent marketplace animations |
+| `--limit <n>` | Number of search results (default: 20) |
+| `--no-browser` | Print search results in terminal |
+| `--lottie` | Download `.lottie` format instead of `.json` |
+| `--port <n>` | Port for view server (auto-selects if omitted) |
 
 ## Using Generated Animations
 
@@ -150,6 +172,7 @@ kin3o generates [Lottie](https://airbnb.io/lottie/) because its JSON format is i
 | Massive animation library + community | [LottieFiles](https://lottiefiles.com) |
 | Polished visual animation editor | [Lottielab](https://www.lottielab.com) or [Rive](https://rive.app) |
 | Runtime inputs (cursor tracking, sliders) | [Rive](https://rive.app) |
+| Search, download, publish to marketplace | **kin3o** + [LottieFiles](https://lottiefiles.com) |
 
 Lottie covers shapes, paths, easing, color transitions, masking, and — via dotLottie — interactive state machines (hover, click, tap). That handles the vast majority of UI animations, loading states, and micro-interactions.
 
@@ -158,6 +181,8 @@ Lottie covers shapes, paths, easing, color transitions, masking, and — via dot
 ```
 Static:      prompt → generate() → extractJson() → validateLottie() → autoFix() → .json → preview
 Interactive: prompt → generate() → extractInteractiveJson() → validate animations + state machine → .lottie → preview
+Marketplace: search → browse → download → validate → .json/.lottie → refine → publish
+Live preview: view <file> → HTTP server + fs.watch → SSE → browser auto-reload
 ```
 
 ### Prompt System

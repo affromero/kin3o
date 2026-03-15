@@ -67,6 +67,8 @@ kin3o download <url> --lottie                           # Download .lottie forma
 kin3o login                                             # Authenticate with LottieFiles
 kin3o logout                                            # Clear stored auth token
 kin3o publish output/file.json --name "My Anim" --tags "ui,loader"  # Publish to marketplace
+kin3o view output/file.json                          # Live preview with hot reload
+kin3o view output/file.lottie --port 3000             # Live preview on specific port
 ```
 
 ## Architecture
@@ -78,6 +80,7 @@ src/
   state-machine-validator.ts      — State machine structural validation
   validator.ts                    — Lottie JSON validation + auto-fix
   preview.ts                      — Browser preview (static + interactive)
+  view.ts                         — Live preview server with hot reload (SSE + fs.watch)
   marketplace.ts                  — LottieFiles GraphQL API client (search/download/publish)
   marketplace-preview.ts          — Search results HTML generation + browser open
   marketplace-auth.ts             — Auth token persistence (~/.kin3o/auth.json)
