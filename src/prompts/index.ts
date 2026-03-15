@@ -12,11 +12,11 @@
 export { LOTTIE_FORMAT_REFERENCE } from './system.js';
 
 // ── Static mode ──
-export { buildSystemPrompt } from './system.js';
+export { buildSystemPrompt, buildRefinementUserPrompt } from './system.js';
 export { PULSING_CIRCLE, WAVEFORM_BARS } from './examples.js';
 
 // ── Interactive mode ──
-export { buildInteractiveSystemPrompt } from './system-interactive.js';
+export { buildInteractiveSystemPrompt, buildInteractiveRefinementUserPrompt } from './system-interactive.js';
 export { INTERACTIVE_BUTTON } from './examples-interactive.js';
 
 // ── Mascot ──

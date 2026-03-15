@@ -59,6 +59,17 @@ Shape types:
 
 CRITICAL: Groups MUST have "tr" (transform) as the LAST item in their "it" array.`;
 
+/** Build the user prompt for a refinement request (static mode) */
+export function buildRefinementUserPrompt(currentJson: string, instruction: string): string {
+  return `Here is the current Lottie animation JSON:
+
+${currentJson}
+
+Refine this animation according to the following instruction: ${instruction}
+
+Output ONLY the complete updated Lottie JSON. Preserve the overall structure and only modify what the instruction requires. Do not add explanation or commentary.`;
+}
+
 export function buildSystemPrompt(tokens?: DesignTokens): string {
   const sections: string[] = [];
 
