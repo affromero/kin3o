@@ -2,6 +2,17 @@ import type { DesignTokens } from './tokens.js';
 import { LOTTIE_FORMAT_REFERENCE } from './system.js';
 import { INTERACTIVE_BUTTON } from './examples-interactive.js';
 
+/** Build the user prompt for a refinement request (interactive mode) */
+export function buildInteractiveRefinementUserPrompt(currentEnvelope: string, instruction: string): string {
+  return `Here is the current interactive animation envelope (animations + state machine):
+
+${currentEnvelope}
+
+Refine this interactive animation according to the following instruction: ${instruction}
+
+Output ONLY the complete updated envelope JSON with all animations and the state machine. Preserve the overall structure and only modify what the instruction requires. Do not add explanation or commentary.`;
+}
+
 export function buildInteractiveSystemPrompt(tokens?: DesignTokens): string {
   const sections: string[] = [];
 

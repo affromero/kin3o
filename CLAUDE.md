@@ -51,6 +51,8 @@ npm run ci                     # typecheck + test
 ```bash
 kin3o generate "pulsing circle"                        # Static animation (.json)
 kin3o generate "toggle switch" --interactive            # Interactive state machine (.lottie)
+kin3o refine output/file.json "make it faster"          # Refine existing animation
+kin3o refine output/file.lottie "add bounce" -o out.lottie  # Refine with custom output
 kin3o preview output/file.json                         # Preview Lottie JSON
 kin3o preview output/file.lottie                       # Preview dotLottie
 kin3o validate output/file.json                        # Validate Lottie JSON
@@ -67,7 +69,7 @@ src/
   state-machine-validator.ts      — State machine structural validation
   validator.ts                    — Lottie JSON validation + auto-fix
   preview.ts                      — Browser preview (static + interactive)
-  utils.ts                        — Shared helpers (JSON extraction, slugify)
+  utils.ts                        — Shared helpers (JSON extraction, slugify, versioned paths)
   brand.ts                        — Brand tokens (colors, fonts, gradients)
   providers/
     registry.ts                   — Provider detection + selection
@@ -109,6 +111,7 @@ examples/
 - **State machine validation**: initial state, animation refs, transition targets, guard/input refs
 - **dotLottie packaging**: @dotlottie/dotlottie-js for .lottie ZIP creation and reading
 - **Prompt barrel**: all prompts/examples/tokens imported via `src/prompts/index.ts`
+- **Refinement**: `refine` command reads existing output, sends current JSON + instruction to AI, writes versioned output (e.g. `anim-v2.json`)
 
 ## DO
 

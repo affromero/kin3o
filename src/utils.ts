@@ -1,5 +1,5 @@
-import { mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, readdirSync } from 'node:fs';
+import { join, parse as parsePath } from 'node:path';
 
 /** Strip benign CLI warnings (e.g. PATH update failures) from stderr */
 export function filterCliStderr(stderr: string): string {
@@ -112,4 +112,34 @@ export function ensureOutputDir(dir = 'output'): string {
   const outputPath = join(process.cwd(), dir);
   mkdirSync(outputPath, { recursive: true });
   return outputPath;
+}
+
+/** Compute the next versioned output path for a refinement */
+export function nextVersionedPath(inputPath: string, outputDir: string): string {
+  const { name, ext } = parsePath(inputPath);
+
+  // Strip existing -vN suffix to get base name
+  const baseName = name.replace(/-v\d+$/, '');
+
+  // Scan output dir for existing versioned files
+  const versionPattern = new RegExp(`^${escapeRegex(baseName)}-v(\\d+)\\${ext}$`);
+  let maxVersion = 1;
+
+  try {
+    for (const file of readdirSync(outputDir)) {
+      const match = file.match(versionPattern);
+      if (match) {
+        maxVersion = Math.max(maxVersion, parseInt(match[1]!, 10));
+      }
+    }
+  } catch {
+    // Output dir may not exist yet — that's fine, start at v2
+  }
+
+  const nextVersion = maxVersion + 1;
+  return join(outputDir, `${baseName}-v${nextVersion}${ext}`);
+}
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

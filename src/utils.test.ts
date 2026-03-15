@@ -1,6 +1,8 @@
-import { describe, it } from 'node:test';
+import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { extractJson, extractInteractiveJson, hexToLottieColor, slugify } from './utils.js';
+import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { extractJson, extractInteractiveJson, hexToLottieColor, slugify, nextVersionedPath } from './utils.js';
 
 describe('extractJson', () => {
   it('extracts raw JSON', () => {
@@ -117,5 +119,46 @@ describe('slugify', () => {
 
   it('lowercases input', () => {
     assert.strictEqual(slugify('Hello World'), 'hello-world');
+  });
+});
+
+describe('nextVersionedPath', () => {
+  const tmpDir = join(process.cwd(), '.test-tmp-versions');
+
+  beforeEach(() => {
+    mkdirSync(tmpDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('first refinement produces -v2', () => {
+    const result = nextVersionedPath('pulsing-circle-1710000000.json', tmpDir);
+    assert.strictEqual(result, join(tmpDir, 'pulsing-circle-1710000000-v2.json'));
+  });
+
+  it('increments from existing -v2 to -v3', () => {
+    writeFileSync(join(tmpDir, 'my-anim-v2.json'), '{}');
+    const result = nextVersionedPath('my-anim-v2.json', tmpDir);
+    assert.strictEqual(result, join(tmpDir, 'my-anim-v3.json'));
+  });
+
+  it('finds highest existing version', () => {
+    writeFileSync(join(tmpDir, 'thing-v2.json'), '{}');
+    writeFileSync(join(tmpDir, 'thing-v3.json'), '{}');
+    writeFileSync(join(tmpDir, 'thing-v5.json'), '{}');
+    const result = nextVersionedPath('thing.json', tmpDir);
+    assert.strictEqual(result, join(tmpDir, 'thing-v6.json'));
+  });
+
+  it('works for .lottie extension', () => {
+    const result = nextVersionedPath('toggle-switch.lottie', tmpDir);
+    assert.strictEqual(result, join(tmpDir, 'toggle-switch-v2.lottie'));
+  });
+
+  it('handles non-existent output dir gracefully', () => {
+    const result = nextVersionedPath('anim.json', '/tmp/nonexistent-dir-xyz');
+    assert.strictEqual(result, join('/tmp/nonexistent-dir-xyz', 'anim-v2.json'));
   });
 });
