@@ -41,7 +41,8 @@
     "@anthropic-ai/sdk": "^0.78.0",
     "@dotlottie/dotlottie-js": "^1.6.3",
     "commander": "^13.0.0",
-    "open": "^10.1.0"
+    "open": "^10.1.0",
+    "puppeteer-core": "^24.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",
