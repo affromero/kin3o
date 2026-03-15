@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.3] - 2026-03-15
+
+### Added
+- `export` command: convert Lottie JSON and dotLottie files to MP4, WebM, or GIF video
+- Frame-by-frame capture via headless Chrome (puppeteer-core) + FFmpeg encoding
+- Support for configurable resolution (480p to 4K), framerate, and background color
+- Two-pass palette generation for high-quality GIF output
+- WebM export with alpha channel transparency
+
 ## [0.2.2] - 2026-03-15
 
 ### Added
