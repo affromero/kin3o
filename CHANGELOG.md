@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.1] - 2026-03-15
+
+### Added
+- Full SEO metadata: Open Graph, Twitter Cards, JSON-LD structured data
+- OG image (1200x630) for social sharing previews
+- Favicon (inline SVG)
+- `robots.txt` and `sitemap.xml`
+
+### Changed
+- Landing page title updated for better search visibility
+
 ## [0.2.0] - 2026-03-15
 
 ### Added
