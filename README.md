@@ -12,6 +12,8 @@
 
 AI-powered Lottie animation generator. Turns natural language prompts into valid, playable Lottie JSON and interactive dotLottie state machines using your existing Claude or Codex subscription.
 
+<img src="assets/stick-figure-demo.gif" alt="Interactive state machine demo — hover to walk, press to run" width="640" />
+
 </div>
 
 ## Why?

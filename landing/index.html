@@ -942,6 +942,17 @@ nav .w{display:flex;justify-content:space-between;align-items:center}
           <span class="sm-state" data-state="hover">hover</span>
           <span class="sm-state" data-state="pressed">pressed</span>
         </div>
+        <div class="sm-hint" style="margin-top:2.5rem">Another example &mdash; hover and press</div>
+        <div class="sm-anim-wrap" id="sf-wrap">
+          <div class="sm-anim-layer" id="sf-idle"></div>
+          <div class="sm-anim-layer" id="sf-walk"></div>
+          <div class="sm-anim-layer" id="sf-run"></div>
+        </div>
+        <div class="sm-states" id="sf-states">
+          <span class="sm-state" data-state="idle">standing</span>
+          <span class="sm-state" data-state="walk">walking</span>
+          <span class="sm-state" data-state="run">running</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1102,6 +1113,51 @@ cw.addEventListener('mouseleave',reset);
   wrap.addEventListener('mouseleave',()=>transition('idle'));
   wrap.addEventListener('mousedown',()=>transition('pressed'));
   wrap.addEventListener('mouseup',()=>transition('hover'));
+})();
+
+// Stick figure state machine — standing / walking / running
+(function(){
+var E={x:[.42],y:[0]},I={x:[.58],y:[1]};
+function osc(a,ph,op){var m=op/2,v=ph?-a:a;return{a:1,k:[{t:0,s:[v],o:E,i:I},{t:m,s:[-v],o:E,i:I},{t:op,s:[v]}]}}
+function SF(op,ls,la,bt,hb){
+  var S={ty:'st',c:{a:0,k:[.95,.95,.95,1]},o:{a:0,k:100},w:{a:0,k:8},lc:2,lj:2};
+  var leg={ty:'sh',ks:{a:0,k:{c:false,v:[[0,0],[0,130]],i:[[0,0],[0,0]],o:[[0,0],[0,0]]}}};
+  var arm={ty:'sh',ks:{a:0,k:{c:false,v:[[0,0],[0,110]],i:[[0,0],[0,0]],o:[[0,0],[0,0]]}}};
+  var bod={ty:'sh',ks:{a:0,k:{c:false,v:[[0,-102],[0,50]],i:[[0,0],[0,0]],o:[[0,0],[0,0]]}}};
+  var m=op/2;
+  var hp=hb?{a:1,k:[{t:0,s:[0,-130],o:E,i:I},{t:m,s:[0,-130-hb],o:E,i:I},{t:op,s:[0,-130]}]}:{a:0,k:[0,-130]};
+  var pp=ls?{a:0,k:[256,256]}:{a:1,k:[{t:0,s:[256,256],o:E,i:I},{t:m,s:[256,253],o:E,i:I},{t:op,s:[256,256]}]};
+  function tr(p,r){return{ty:'tr',p:{a:0,k:p},a:{a:0,k:[0,0]},s:{a:0,k:[100,100]},r:r,o:{a:0,k:100}}}
+  return{v:'5.5.2',fr:60,ip:0,op:op,w:512,h:512,ddd:0,assets:[],layers:[{
+    ty:4,nm:'SF',ip:0,op:op,st:0,ddd:0,
+    ks:{a:{a:0,k:[0,0]},p:pp,s:{a:0,k:[100,100]},r:{a:0,k:bt||0},o:{a:0,k:100}},
+    shapes:[
+      {ty:'gr',it:[leg,S,tr([0,50],ls?osc(ls,false,op):{a:0,k:5})]},
+      {ty:'gr',it:[leg,S,tr([0,50],ls?osc(ls,true,op):{a:0,k:-5})]},
+      {ty:'gr',it:[bod,S,tr([0,0],{a:0,k:0})]},
+      {ty:'gr',it:[arm,S,tr([0,-85],la?osc(la,true,op):{a:0,k:8})]},
+      {ty:'gr',it:[arm,S,tr([0,-85],la?osc(la,false,op):{a:0,k:-8})]},
+      {ty:'gr',it:[{ty:'el',p:{a:0,k:[0,0]},s:{a:0,k:[56,56]}},S,{ty:'tr',p:hp,a:{a:0,k:[0,0]},s:{a:0,k:[100,100]},r:{a:0,k:0},o:{a:0,k:100}}]}
+    ],bm:0
+  }]};
+}
+L('sf-idle',SF(120));
+L('sf-walk',SF(60,20,15,0,8));
+L('sf-run',SF(40,35,30,8,12));
+var sfWrap=document.getElementById('sf-wrap');
+var sfLayers=sfWrap.querySelectorAll('.sm-anim-layer');
+var sfChips=document.querySelectorAll('#sf-states .sm-state');
+var sfCur=null;
+function sfTr(state){
+  if(state===sfCur)return;sfCur=state;
+  var map={idle:0,walk:1,run:2};
+  sfLayers.forEach(function(l,i){l.classList.toggle('active',i===map[state])});
+  sfChips.forEach(function(c){c.classList.toggle('on',c.dataset.state===state)});
+}
+sfWrap.addEventListener('mouseenter',function(){sfTr(sfCur?'walk':'idle')});
+sfWrap.addEventListener('mouseleave',function(){sfTr('idle')});
+sfWrap.addEventListener('mousedown',function(){sfTr('run')});
+sfWrap.addEventListener('mouseup',function(){sfTr('walk')});
 })();
 
 // Tab switching for code section (Fix 10)
