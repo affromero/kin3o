@@ -1,0 +1,58 @@
+name: Publish to npm
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run ci
+      - run: npm run build
+      - run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  notify:
+    name: Telegram Notification
+    needs: publish
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Notify via Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PUBLISH_STATUS: ${{ needs.publish.result }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+
+          if [ "$PUBLISH_STATUS" = "success" ]; then
+            EMOJI="📦"
+            STATUS="published"
+          else
+            EMOJI="❌"
+            STATUS="publish failed"
+          fi
+
+          NL=$'\n'
+          TEXT="${EMOJI} <b>@afromero/kin3o@${TAG} ${STATUS}</b>${NL}"
+          TEXT="${TEXT}<a href=\"https://www.npmjs.com/package/@afromero/kin3o\">npm</a>  ·  <a href=\"https://github.com/${{ github.repository }}/releases/tag/${TAG}\">release</a>"
+
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg chat_id "$TELEGRAM_CHAT_ID" --arg text "$TEXT" \
+              '{chat_id: $chat_id, text: $text, parse_mode: "HTML", disable_web_page_preview: true}')"

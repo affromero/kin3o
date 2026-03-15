@@ -1,5 +1,5 @@
 {
-  "name": "kin3o",
+  "name": "@afromero/kin3o",
   "version": "0.1.0",
   "description": "AI-powered Lottie animation generator — text to motion from your terminal",
   "type": "module",
