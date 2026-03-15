@@ -64,6 +64,10 @@ kin3o generate "loading dots" --tokens sotto
 kin3o generate "toggle switch with on/off states" --interactive
 kin3o generate "like button with hover and click" --interactive
 
+# Refine an existing animation
+kin3o refine output/animation.json "make it faster and add easing"
+kin3o refine output/animation.lottie "add a bounce on the pressed state"
+
 # Preview
 kin3o preview output/animation.json
 kin3o preview output/animation.lottie
