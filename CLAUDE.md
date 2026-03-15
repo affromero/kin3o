@@ -1,10 +1,10 @@
-# CLAUDE.md — Kineo
+# CLAUDE.md — kin3o
 
-> **Kineo** — AI-powered Lottie animation generator CLI
+> **kin3o** — AI-powered Lottie animation generator CLI
 
-## What is Kineo?
+## What is kin3o?
 
-Kineo generates Lottie JSON animations from natural language prompts using Claude/Codex as the AI backend. Named after Kineo (Greek: movement/motion).
+kin3o generates Lottie JSON animations from natural language prompts using Claude/Codex as the AI backend. Named after kin3o (Greek: movement/motion).
 
 ## Tech Stack
 

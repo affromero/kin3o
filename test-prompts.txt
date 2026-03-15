@@ -1,4 +1,4 @@
-# Kineo Test Prompts
+# kin3o Test Prompts
 # Run each with: npx tsx src/index.ts generate "<prompt>"
 
 ## Simple (single element, basic animation)

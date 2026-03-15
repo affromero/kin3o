@@ -1,4 +1,4 @@
-# Kineo
+# kin3o
 
 AI-powered Lottie animation generator. Turns natural language prompts into valid, playable Lottie JSON animations using Claude or Codex as the AI backend.
 
@@ -6,11 +6,11 @@ Named after *kinesis* (Greek: movement/motion).
 
 ## Why?
 
-Every motion design tool (Rive, LottieFiles, Hera) sandboxes its AI inside a walled-garden editor, charges per-generation credits, and requires designs we don't have. Kineo spawns `claude --print` or `codex exec` as subprocesses to use existing Max/Pro subscriptions at zero marginal cost, with full context control via system prompts.
+Every motion design tool (Rive, LottieFiles, Hera) sandboxes its AI inside a walled-garden editor, charges per-generation credits, and requires designs we don't have. kin3o spawns `claude --print` or `codex exec` as subprocesses to use existing Max/Pro subscriptions at zero marginal cost, with full context control via system prompts.
 
 ## Competitors
 
-| Feature | **Kineo** | **LottieFiles** | **LottieGen** | **Recraft** | **Lottielab** |
+| Feature | **kin3o** | **LottieFiles** | **LottieGen** | **Recraft** | **Lottielab** |
 |---------|-----------|-----------------|---------------|-------------|---------------|
 | Text → Lottie JSON | Yes | Yes (Motion Copilot) | Yes | Yes (via export) | No |
 | CLI | Yes | No | No | No | No |
@@ -64,7 +64,7 @@ npx tsx src/index.ts providers
 
 ## Using Generated Animations
 
-Kineo outputs standard `.json` Lottie files — no compilation, no binary encoding, no special tooling. Drop them into any project:
+kin3o outputs standard `.json` Lottie files — no compilation, no binary encoding, no special tooling. Drop them into any project:
 
 ```tsx
 // React (lottie-react)

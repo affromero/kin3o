@@ -1,10 +1,10 @@
 /**
- * Kineo brand tokens — single source of truth for colors, fonts, and styling.
+ * kin3o brand tokens — single source of truth for colors, fonts, and styling.
  * Used by landing page generator, preview template, and design token presets.
  */
 
 export const brand = {
-  name: 'Kineo',
+  name: 'kin3o',
   tagline: 'Text to Motion',
   description: 'AI-powered Lottie animation generator',
 

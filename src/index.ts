@@ -12,7 +12,7 @@ import { extractJson, slugify, ensureOutputDir } from './utils.js';
 const program = new Command();
 
 program
-  .name('kineo')
+  .name('kin3o')
   .description('AI-powered Lottie animation generator')
   .version('0.1.0');
 
@@ -33,7 +33,7 @@ program
   .option('--no-preview', 'Skip opening preview in browser')
   .option('-t, --tokens <path>', 'Path to design tokens JSON (or "sotto" for built-in)')
   .action(async (prompt: string, options: GenerateOptions) => {
-    console.log('\nKineo — Generating animation...');
+    console.log('\nkin3o — Generating animation...');
 
     // 1. Detect provider
     let providerKey = options.provider;
@@ -47,7 +47,7 @@ program
 
     const provider = PROVIDERS[providerKey];
     if (!provider) {
-      console.error(`  ✗ Unknown provider "${providerKey}". Run "kineo providers" to see available options.`);
+      console.error(`  ✗ Unknown provider "${providerKey}". Run "kin3o providers" to see available options.`);
       process.exit(1);
     }
 
