@@ -5,6 +5,7 @@
 **Text to Motion. From your terminal.**
 
 [![npm](https://img.shields.io/npm/v/@afromero/kin3o)](https://www.npmjs.com/package/@afromero/kin3o)
+[![downloads](https://img.shields.io/npm/dm/@afromero/kin3o)](https://www.npmjs.com/package/@afromero/kin3o)
 [![CI](https://github.com/affromero/kin3o/actions/workflows/ci.yml/badge.svg)](https://github.com/affromero/kin3o/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
