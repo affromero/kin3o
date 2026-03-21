@@ -238,6 +238,14 @@ npm run ci           # typecheck + test
 npm run build        # Compile to dist/
 ```
 
+## Related Projects
+
+| Project | Description |
+|---------|-------------|
+| [**Fairtrail**](https://github.com/affromero/fairtrail) | Flight price evolution tracker with natural language search |
+| [**PriceToken**](https://github.com/affromero/pricetoken) | Real-time LLM pricing API, npm/PyPI packages, and live dashboard |
+| [**gitpane**](https://github.com/affromero/gitpane) | Multi-repo Git workspace dashboard for the terminal |
+
 ## License
 
 MIT
