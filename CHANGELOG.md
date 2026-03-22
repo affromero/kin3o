@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.4] - 2026-03-22
+
+### Changed
+- Increased CLI subprocess timeout to 10 minutes for longer-running AI generations
+
+### Documentation
+- Added related projects section to README
+- Added npm downloads badge to README
+
 ## [0.2.3] - 2026-03-15
 
 ### Added
