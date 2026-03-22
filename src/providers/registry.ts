@@ -17,7 +17,15 @@ export interface ProviderConfig {
   models: string[];
   defaultModel: string;
   isAvailable: () => Promise<boolean>;
-  generate: (model: string, systemPrompt: string, userPrompt: string) => Promise<GenerationResult>;
+  generate: (model: string, systemPrompt: string, userPrompt: string, timeoutMs?: number) => Promise<GenerationResult>;
+}
+
+/** Default CLI subprocess timeout: 10 minutes */
+const DEFAULT_TIMEOUT_MS = 600_000;
+
+/** Get timeout with optional user override */
+export function getTimeoutMs(userOverride?: number): number {
+  return userOverride ?? DEFAULT_TIMEOUT_MS;
 }
 
 const home = homedir();

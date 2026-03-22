@@ -40,7 +40,8 @@ program
   .option('--no-preview', 'Skip opening preview in browser')
   .option('-t, --tokens <path>', 'Path to design tokens JSON (or "sotto" for built-in)')
   .option('-i, --interactive', 'Generate interactive state machine (.lottie output)', false)
-  .action(async (prompt: string, options: GenerateOptions) => {
+  .option('--timeout <ms>', 'CLI subprocess timeout in milliseconds (default: auto per model)', parseInt)
+  .action(async (prompt: string, options: GenerateOptions & { timeout?: number }) => {
     const mode = options.interactive ? 'interactive' : 'static';
     console.log(`\nkin3o — Generating ${mode} animation...`);
 
@@ -74,7 +75,7 @@ program
 
     // 4. Generate
     try {
-      const result = await provider.generate(model, systemPrompt, prompt);
+      const result = await provider.generate(model, systemPrompt, prompt, options.timeout);
       console.log(`  ✓ Generated in ${(result.durationMs / 1000).toFixed(1)}s`);
 
       if (options.interactive) {
@@ -197,7 +198,8 @@ program
   .option('-o, --output <path>', 'Output file path')
   .option('--no-preview', 'Skip opening preview in browser')
   .option('-t, --tokens <path>', 'Path to design tokens JSON (or "sotto" for built-in)')
-  .action(async (file: string, prompt: string, rawOptions: Omit<GenerateOptions, 'interactive'>) => {
+  .option('--timeout <ms>', 'CLI subprocess timeout in milliseconds (default: 600000)', parseInt)
+  .action(async (file: string, prompt: string, rawOptions: Omit<GenerateOptions, 'interactive'> & { timeout?: number }) => {
     const resolvedPath = resolve(file);
 
     // 1. Validate input file
@@ -263,7 +265,7 @@ program
 
     // 6. Generate refined output
     try {
-      const result = await provider.generate(model, systemPrompt, userPrompt);
+      const result = await provider.generate(model, systemPrompt, userPrompt, rawOptions.timeout);
       console.log(`  ✓ Refined in ${(result.durationMs / 1000).toFixed(1)}s`);
 
       // 7. Compute output path

@@ -1,21 +1,24 @@
 import { spawn } from 'node:child_process';
 import type { GenerationResult } from './registry.js';
+import { getTimeoutMs } from './registry.js';
 import { filterCliStderr } from '../utils.js';
 
 export async function generateWithClaude(
   model: string,
   systemPrompt: string,
   userPrompt: string,
+  timeoutMs?: number,
 ): Promise<GenerationResult> {
   const start = Date.now();
   const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
+  const timeout = getTimeoutMs(timeoutMs);
 
   const content = await new Promise<string>((resolve, reject) => {
     const env = { ...process.env };
     delete env.ANTHROPIC_API_KEY;
 
     const proc = spawn('claude', ['--print', '--model', model], {
-      timeout: 240_000,
+      timeout,
       env,
     });
 
@@ -30,7 +33,8 @@ export async function generateWithClaude(
     proc.on('close', (code) => {
       if (code !== 0) {
         const filtered = filterCliStderr(stderr);
-        reject(new Error(`claude CLI exited ${code}: ${filtered}`));
+        const hint = code === 143 ? ` (timed out after ${Math.round(timeout / 1000)}s — try --timeout <ms> or a faster model)` : '';
+        reject(new Error(`claude CLI exited ${code}: ${filtered}${hint}`));
       } else {
         resolve(stdout.trim());
       }
