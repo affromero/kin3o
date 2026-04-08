@@ -39,6 +39,13 @@ function hasBinary(name: string): boolean {
   }
 }
 
+export interface ProviderDiagnosis {
+  binaryFound: boolean;
+  authFound: boolean;
+  binaryName: string;
+  authPaths: string[];
+}
+
 export const PROVIDERS: Record<string, ProviderConfig> = {
   'claude-code': {
     displayName: 'Claude Code (Max/Pro)',
@@ -47,7 +54,8 @@ export const PROVIDERS: Record<string, ProviderConfig> = {
     isAvailable: async () => {
       if (!hasBinary('claude')) return false;
       return existsSync(join(home, '.claude.json'))
-        || existsSync(join(home, '.claude', 'credentials.json'));
+        || existsSync(join(home, '.claude', 'credentials.json'))
+        || existsSync(join(home, '.claude', '.credentials.json'));
     },
     generate: generateWithClaude,
   },
@@ -62,6 +70,34 @@ export const PROVIDERS: Record<string, ProviderConfig> = {
     generate: generateWithCodex,
   },
 };
+
+const PROVIDER_BINARIES: Record<string, string> = {
+  'claude-code': 'claude',
+  codex: 'codex',
+};
+
+const PROVIDER_AUTH_PATHS: Record<string, string[]> = {
+  'claude-code': [
+    join(home, '.claude.json'),
+    join(home, '.claude', 'credentials.json'),
+    join(home, '.claude', '.credentials.json'),
+  ],
+  codex: [
+    join(home, '.codex', 'auth.json'),
+  ],
+};
+
+/** Diagnose why a provider is or isn't available */
+export function diagnoseProvider(key: string): ProviderDiagnosis {
+  const binaryName = PROVIDER_BINARIES[key] ?? key;
+  const authPaths = PROVIDER_AUTH_PATHS[key] ?? [];
+  return {
+    binaryFound: hasBinary(binaryName),
+    authFound: authPaths.some(p => existsSync(p)),
+    binaryName,
+    authPaths,
+  };
+}
 
 /** Detect which providers are available (binary + auth) */
 export async function detectAvailableProviders(): Promise<string[]> {

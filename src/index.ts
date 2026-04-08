@@ -2,7 +2,7 @@
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { Command } from 'commander';
-import { PROVIDERS, detectAvailableProviders, getDefaultProvider } from './providers/registry.js';
+import { PROVIDERS, detectAvailableProviders, getDefaultProvider, diagnoseProvider } from './providers/registry.js';
 import { buildSystemPrompt, buildInteractiveSystemPrompt, buildRefinementUserPrompt, buildInteractiveRefinementUserPrompt, loadDesignTokens } from './prompts/index.js';
 import { validateLottie, autoFix } from './validator.js';
 import { validateStateMachine } from './state-machine-validator.js';
@@ -50,7 +50,7 @@ program
     if (!providerKey) {
       providerKey = await getDefaultProvider() ?? undefined;
       if (!providerKey) {
-        console.error('  ✗ No AI providers available. Install Claude Code, Codex, or set ANTHROPIC_API_KEY.');
+        console.error('  ✗ No AI providers available. Run `kin3o providers` for diagnostics.');
         process.exit(1);
       }
     }
@@ -238,7 +238,7 @@ program
     if (!providerKey) {
       providerKey = await getDefaultProvider() ?? undefined;
       if (!providerKey) {
-        console.error('  ✗ No AI providers available. Install Claude Code, Codex, or set ANTHROPIC_API_KEY.');
+        console.error('  ✗ No AI providers available. Run `kin3o providers` for diagnostics.');
         process.exit(1);
       }
     }
@@ -433,9 +433,21 @@ program
     const available = await detectAvailableProviders();
     console.log('\nAvailable AI Providers:\n');
     for (const [key, config] of Object.entries(PROVIDERS)) {
-      const status = available.includes(key) ? '✓' : '✗';
+      const isAvail = available.includes(key);
+      const status = isAvail ? '✓' : '✗';
       console.log(`  ${status} ${config.displayName} (${key})`);
       console.log(`    Models: ${config.models.join(', ')}`);
+      if (!isAvail) {
+        const diag = diagnoseProvider(key);
+        if (!diag.binaryFound) {
+          console.log(`    Problem: "${diag.binaryName}" not found on PATH`);
+          console.log(`    Fix: Install ${config.displayName} and ensure "${diag.binaryName}" is on your PATH`);
+        } else if (!diag.authFound) {
+          const cmd = key === 'codex' ? 'codex auth' : 'claude';
+          console.log(`    Problem: CLI found but not authenticated`);
+          console.log(`    Fix: Run \`${cmd}\` to log in`);
+        }
+      }
     }
     console.log('');
   });
