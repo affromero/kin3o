@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.5] - 2026-04-08
+
+### Fixed
+- Provider detection now shows why a provider isn't available (binary missing vs not authenticated) via `kin3o providers` (#1)
+- Added `~/.claude/.credentials.json` as auth path for newer Claude Code installs
+
 ## [0.2.4] - 2026-03-22
 
 ### Changed
