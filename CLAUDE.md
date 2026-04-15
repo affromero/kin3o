@@ -52,7 +52,13 @@ npm run ci                     # typecheck + test
 ```bash
 kin3o generate "pulsing circle"                        # Static animation (.json)
 kin3o generate "toggle switch" --interactive            # Interactive state machine (.lottie)
+kin3o generate "bouncy dots" --personality playful      # Playful motion personality
+kin3o generate "dashboard chart" --personality corporate # Corporate motion personality
+kin3o generate "luxury reveal" --personality premium    # Premium/luxury motion
+kin3o generate "sports highlight" --personality energetic # High-energy motion
+kin3o generate "happy celebration confetti"             # Auto-detects: playful + joy
 kin3o refine output/file.json "make it faster"          # Refine existing animation
+kin3o refine output/file.json "add bounce" --personality playful  # Refine with personality
 kin3o refine output/file.lottie "add bounce" -o out.lottie  # Refine with custom output
 kin3o preview output/file.json                         # Preview Lottie JSON
 kin3o preview output/file.lottie                       # Preview dotLottie
@@ -105,6 +111,7 @@ src/
     examples.ts                   — Few-shot Lottie examples (pulsing circle, waveform)
     examples-interactive.ts       — Interactive button example (idle/hover/pressed)
     examples-mascot.ts            — kin3o mascot/logo animation (static + interactive)
+    motion-design.ts              — Motion design principles (personality, emotion, timing, easing)
     tokens.ts                     — Design token loader
 preview/
   template.html                   — Static Lottie preview (lottie-web)
@@ -139,6 +146,7 @@ examples/
 - **Marketplace**: LottieFiles GraphQL API at `graphql.lottiefiles.com` — search/browse/download (no auth), publish (auth required)
 - **Target resolution**: download accepts UUID, LottieFiles URL, or CDN URL — `resolveTarget()` normalizes all formats
 - **Auth flow**: `createLoginToken` → browser login → poll `tokenLogin` → save to `~/.kin3o/auth.json`
+- **Motion design**: `--personality` flag selects motion archetype (playful/premium/corporate/energetic). Emotion auto-detected from prompt keywords. Both inject Lottie-specific guidance (tangent values, frame counts at 60fps) into the system prompt. Based on [LottieFiles motion-design-skill](https://github.com/LottieFiles/motion-design-skill) (MIT).
 - **Video export**: lottie-web renders in headless Chrome via puppeteer-core, frame-by-frame capture with `goToAndStop()`, piped to FFmpeg. GIF uses two-pass palette generation for quality. Requires system Chrome + FFmpeg.
 
 ## DO
