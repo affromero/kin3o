@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import { PROVIDERS, detectAvailableProviders, getDefaultProvider, diagnoseProvider } from './providers/registry.js';
-import { buildSystemPrompt, buildInteractiveSystemPrompt, buildRefinementUserPrompt, buildInteractiveRefinementUserPrompt, loadDesignTokens } from './prompts/index.js';
+import { buildSystemPrompt, buildInteractiveSystemPrompt, buildRefinementUserPrompt, buildInteractiveRefinementUserPrompt, loadDesignTokens, detectPersonality, detectEmotion } from './prompts/index.js';
+import type { MotionPersonality, MotionDesignOptions } from './prompts/index.js';
 import { validateLottie, autoFix } from './validator.js';
 import { validateStateMachine } from './state-machine-validator.js';
 import { openPreview, openDotLottiePreview } from './preview.js';
@@ -29,6 +30,7 @@ interface GenerateOptions {
   preview: boolean;
   tokens?: string;
   interactive: boolean;
+  personality?: string;
 }
 
 program
@@ -40,6 +42,7 @@ program
   .option('--no-preview', 'Skip opening preview in browser')
   .option('-t, --tokens <path>', 'Path to design tokens JSON (or "sotto" for built-in)')
   .option('-i, --interactive', 'Generate interactive state machine (.lottie output)', false)
+  .addOption(new Option('--personality <type>', 'Motion personality: playful, premium, corporate, energetic').choices(['playful', 'premium', 'corporate', 'energetic']))
   .option('--timeout <ms>', 'CLI subprocess timeout in milliseconds (default: auto per model)', parseInt)
   .action(async (prompt: string, options: GenerateOptions & { timeout?: number }) => {
     const mode = options.interactive ? 'interactive' : 'static';
@@ -68,12 +71,20 @@ program
     // 2. Load design tokens
     const tokens = options.tokens ? loadDesignTokens(options.tokens) : undefined;
 
-    // 3. Build system prompt
-    const systemPrompt = options.interactive
-      ? buildInteractiveSystemPrompt(tokens)
-      : buildSystemPrompt(tokens);
+    // 3. Resolve motion design options
+    const personality: MotionPersonality | undefined =
+      (options.personality as MotionPersonality) ?? detectPersonality(prompt);
+    const emotion = detectEmotion(prompt);
+    const motionOptions: MotionDesignOptions = { personality, emotion };
+    if (personality) console.log(`  Personality: ${personality}`);
+    if (emotion) console.log(`  Emotion: ${emotion}`);
 
-    // 4. Generate
+    // 4. Build system prompt
+    const systemPrompt = options.interactive
+      ? buildInteractiveSystemPrompt(tokens, motionOptions)
+      : buildSystemPrompt(tokens, motionOptions);
+
+    // 5. Generate
     try {
       const result = await provider.generate(model, systemPrompt, prompt, options.timeout);
       console.log(`  ✓ Generated in ${(result.durationMs / 1000).toFixed(1)}s`);
@@ -198,6 +209,7 @@ program
   .option('-o, --output <path>', 'Output file path')
   .option('--no-preview', 'Skip opening preview in browser')
   .option('-t, --tokens <path>', 'Path to design tokens JSON (or "sotto" for built-in)')
+  .addOption(new Option('--personality <type>', 'Motion personality: playful, premium, corporate, energetic').choices(['playful', 'premium', 'corporate', 'energetic']))
   .option('--timeout <ms>', 'CLI subprocess timeout in milliseconds (default: 600000)', parseInt)
   .action(async (file: string, prompt: string, rawOptions: Omit<GenerateOptions, 'interactive'> & { timeout?: number }) => {
     const resolvedPath = resolve(file);
@@ -256,9 +268,15 @@ program
 
     // 5. Build prompts
     const tokens = rawOptions.tokens ? loadDesignTokens(rawOptions.tokens) : undefined;
+    const refinePersonality: MotionPersonality | undefined =
+      (rawOptions.personality as MotionPersonality) ?? detectPersonality(prompt);
+    const refineEmotion = detectEmotion(prompt);
+    const motionOpts: MotionDesignOptions = { personality: refinePersonality, emotion: refineEmotion };
+    if (refinePersonality) console.log(`  Personality: ${refinePersonality}`);
+    if (refineEmotion) console.log(`  Emotion: ${refineEmotion}`);
     const systemPrompt = isInteractive
-      ? buildInteractiveSystemPrompt(tokens)
-      : buildSystemPrompt(tokens);
+      ? buildInteractiveSystemPrompt(tokens, motionOpts)
+      : buildSystemPrompt(tokens, motionOpts);
     const userPrompt = isInteractive
       ? buildInteractiveRefinementUserPrompt(currentJson, prompt)
       : buildRefinementUserPrompt(currentJson, prompt);
