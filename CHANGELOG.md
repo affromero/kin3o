@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] - 2026-04-15
+
+### Added
+- Motion design principles integrated into AI system prompts — directional easing, timing tables, quality rules, choreography guidance, and pattern recipes adapted from [LottieFiles motion-design-skill](https://github.com/LottieFiles/motion-design-skill) (MIT)
+- `--personality` flag for generate and refine commands — choose from `playful`, `premium`, `corporate`, or `energetic` motion archetypes with Lottie-native easing tangent values and timing
+- Auto-detection of motion personality and emotion from prompt keywords (e.g. "bouncy" → playful, "celebration" → joy)
+
 ## [0.2.5] - 2026-04-08
 
 ### Fixed
