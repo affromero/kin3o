@@ -65,6 +65,13 @@ kin3o generate "5-bar audio waveform" --provider claude-code --model sonnet
 kin3o generate "notification bell" --no-preview --output bell.json
 kin3o generate "loading dots" --tokens sotto
 
+# Motion personality
+kin3o generate "bouncy loading dots" --personality playful
+kin3o generate "dashboard chart entrance" --personality corporate
+kin3o generate "luxury brand reveal" --personality premium
+kin3o generate "sports highlight reel" --personality energetic
+kin3o generate "happy celebration confetti"                        # auto-detects personality + emotion
+
 # Interactive state machines (.lottie)
 kin3o generate "toggle switch with on/off states" --interactive
 kin3o generate "like button with hover and click" --interactive
@@ -116,6 +123,7 @@ kin3o view output/animation.lottie --port 3000         # Specific port
 | `-o, --output <path>` | Output filename |
 | `--no-preview` | Skip browser preview |
 | `-i, --interactive` | Generate interactive state machine (`.lottie` output) |
+| `--personality <type>` | Motion personality: `playful`, `premium`, `corporate`, `energetic` |
 | `-t, --tokens <path>` | Design tokens JSON or `sotto` preset |
 | `--featured` | Browse featured marketplace animations |
 | `--popular` | Browse popular marketplace animations |
@@ -213,6 +221,7 @@ All prompts live in `src/prompts/` with a barrel export at `src/prompts/index.ts
 | `examples.ts` | Few-shot: pulsing circle, waveform bars |
 | `examples-interactive.ts` | Few-shot: interactive button (idle/hover/pressed) |
 | `examples-mascot.ts` | kin3o mascot/logo (static + interactive) |
+| `motion-design.ts` | Motion design principles — personality archetypes, emotion mapping, timing, easing, choreography |
 | `tokens.ts` | Design token loader (hex → Lottie RGBA) |
 
 ## Prerequisites for Export
@@ -247,6 +256,10 @@ npm run build        # Compile to dist/
 | [**Fairtrail**](https://github.com/affromero/fairtrail) | Flight price evolution tracker with natural language search |
 | [**PriceToken**](https://github.com/affromero/pricetoken) | Real-time LLM pricing API, npm/PyPI packages, and live dashboard |
 | [**gitpane**](https://github.com/affromero/gitpane) | Multi-repo Git workspace dashboard for the terminal |
+
+## Acknowledgments
+
+Motion design principles (personality archetypes, emotion mapping, timing tables, easing curves, choreography rules) are adapted from the [LottieFiles motion-design-skill](https://github.com/LottieFiles/motion-design-skill) (MIT), condensed and translated into Lottie-native parameters (tangent values, frame counts at 60fps).
 
 ## License
 
