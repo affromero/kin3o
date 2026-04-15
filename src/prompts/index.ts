@@ -22,6 +22,10 @@ export { INTERACTIVE_BUTTON } from './examples-interactive.js';
 // ── Mascot ──
 export { MASCOT_STATIC, MASCOT_INTERACTIVE } from './examples-mascot.js';
 
+// ── Motion design ──
+export { buildMotionDesignSection, detectPersonality, detectEmotion } from './motion-design.js';
+export type { MotionPersonality, EmotionHint, MotionDesignOptions } from './motion-design.js';
+
 // ── Design tokens ──
 export { loadDesignTokens, SOTTO_TOKENS } from './tokens.js';
 export type { DesignTokens } from './tokens.js';
