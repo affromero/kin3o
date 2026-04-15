@@ -13,6 +13,8 @@ import {
   buildPatternRecipesSection,
 } from './motion-design.js';
 import type { MotionPersonality } from './motion-design.js';
+import { buildSystemPrompt } from './system.js';
+import { buildInteractiveSystemPrompt } from './system-interactive.js';
 
 describe('detectPersonality', () => {
   it('detects playful from keyword', () => {
@@ -178,5 +180,37 @@ describe('buildMotionDesignSection', () => {
   it('total output under 15,000 characters with personality and emotion', () => {
     const result = buildMotionDesignSection({ personality: 'playful', emotion: 'joy' });
     assert.ok(result.length < 15_000, `Output too large: ${result.length} chars`);
+  });
+});
+
+describe('buildSystemPrompt with motion design', () => {
+  it('without motionOptions still contains structural rules and format reference', () => {
+    const result = buildSystemPrompt();
+    assert.ok(result.includes('DESIGN RULES'));
+    assert.ok(result.includes('LOTTIE FORMAT REFERENCE'));
+    assert.ok(result.includes('MOTION DESIGN PRINCIPLES'));
+  });
+
+  it('with personality includes personality section', () => {
+    const result = buildSystemPrompt(undefined, { personality: 'playful' });
+    assert.ok(result.includes('MOTION PERSONALITY: PLAYFUL'));
+  });
+
+  it('total system prompt under 25,000 characters with personality and emotion', () => {
+    const result = buildSystemPrompt(undefined, { personality: 'playful', emotion: 'joy' });
+    assert.ok(result.length < 25_000, `System prompt too large: ${result.length} chars`);
+  });
+});
+
+describe('buildInteractiveSystemPrompt with motion design', () => {
+  it('without motionOptions still contains state machine spec', () => {
+    const result = buildInteractiveSystemPrompt();
+    assert.ok(result.includes('DOTLOTTIE STATE MACHINE FORMAT'));
+    assert.ok(result.includes('MOTION DESIGN PRINCIPLES'));
+  });
+
+  it('with personality includes personality section', () => {
+    const result = buildInteractiveSystemPrompt(undefined, { personality: 'premium' });
+    assert.ok(result.includes('MOTION PERSONALITY: PREMIUM'));
   });
 });

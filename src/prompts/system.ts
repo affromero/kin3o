@@ -1,4 +1,6 @@
 import type { DesignTokens } from './tokens.js';
+import type { MotionDesignOptions } from './motion-design.js';
+import { buildMotionDesignSection } from './motion-design.js';
 import { PULSING_CIRCLE, WAVEFORM_BARS } from './examples.js';
 
 export const LOTTIE_FORMAT_REFERENCE = `
@@ -70,7 +72,7 @@ Refine this animation according to the following instruction: ${instruction}
 Output ONLY the complete updated Lottie JSON. Preserve the overall structure and only modify what the instruction requires. Do not add explanation or commentary.`;
 }
 
-export function buildSystemPrompt(tokens?: DesignTokens): string {
+export function buildSystemPrompt(tokens?: DesignTokens, motionOptions?: MotionDesignOptions): string {
   const sections: string[] = [];
 
   // 1. Role + output rules
@@ -79,20 +81,20 @@ export function buildSystemPrompt(tokens?: DesignTokens): string {
   // 2. Lottie format spec
   sections.push(LOTTIE_FORMAT_REFERENCE);
 
-  // 3. Design rules
+  // 3. Structural design rules
   sections.push(`
 DESIGN RULES:
 - Frame rate: 60fps
-- Duration: 120-180 frames (2-3 seconds)
 - Canvas: 512x512 pixels, center at [256, 256]
 - Loopable: last keyframe values must match first keyframe values
-- Use ease-in-out easing by default
 - Shape layers only (ty=4)
 - Always include "ddd": 0 and "assets": []
-- Keep animations smooth and proportional
 - Use distinct colors for different elements`);
 
-  // 4. Design tokens (conditional)
+  // 4. Motion design principles
+  sections.push(buildMotionDesignSection(motionOptions));
+
+  // 5. Design tokens (conditional)
   if (tokens) {
     const colorLines = Object.entries(tokens.colors)
       .map(([name, rgba]) => `  ${name}: [${rgba.join(', ')}]`)
@@ -102,7 +104,7 @@ DESIGN TOKENS — use these colors when appropriate:
 ${colorLines}`);
   }
 
-  // 5. Few-shot examples
+  // 6. Few-shot examples
   sections.push(`
 EXAMPLE 1 — Pulsing circle (scale animation):
 ${JSON.stringify(PULSING_CIRCLE)}

@@ -1,4 +1,6 @@
 import type { DesignTokens } from './tokens.js';
+import type { MotionDesignOptions } from './motion-design.js';
+import { buildMotionDesignSection } from './motion-design.js';
 import { LOTTIE_FORMAT_REFERENCE } from './system.js';
 import { INTERACTIVE_BUTTON } from './examples-interactive.js';
 
@@ -13,7 +15,7 @@ Refine this interactive animation according to the following instruction: ${inst
 Output ONLY the complete updated envelope JSON with all animations and the state machine. Preserve the overall structure and only modify what the instruction requires. Do not add explanation or commentary.`;
 }
 
-export function buildInteractiveSystemPrompt(tokens?: DesignTokens): string {
+export function buildInteractiveSystemPrompt(tokens?: DesignTokens, motionOptions?: MotionDesignOptions): string {
   const sections: string[] = [];
 
   // 1. Role + output rules
@@ -81,20 +83,21 @@ Input types:
 - "Numeric": { "name": "<name>", "type": "Numeric", "value": <default number> }
 - "String": { "name": "<name>", "type": "String", "value": "<default string>" }`);
 
-  // 4. Design rules
+  // 4. Structural design rules
   sections.push(`
 INTERACTIVE DESIGN RULES:
-- Keep individual animations SHORT: 60-120 frames (1-2 seconds at 60fps)
 - Maximum 4 states per state machine
 - Each animation: 512x512 canvas, 60fps, shape layers only
 - Animations should be distinct but visually cohesive (same style, similar colors)
-- Use ease-in-out easing by default
 - Make loopable animations where appropriate (idle states)
 - Always include "ddd": 0 and "assets": []
 - Colors: 0-1 floats (NOT 0-255)
 - Groups MUST end with "tr" transform`);
 
-  // 5. Design tokens
+  // 5. Motion design principles
+  sections.push(buildMotionDesignSection(motionOptions));
+
+  // 6. Design tokens
   if (tokens) {
     const colorLines = Object.entries(tokens.colors)
       .map(([name, rgba]) => `  ${name}: [${rgba.join(', ')}]`)
@@ -104,7 +107,7 @@ DESIGN TOKENS — use these colors when appropriate:
 ${colorLines}`);
   }
 
-  // 6. Few-shot example
+  // 7. Few-shot example
   sections.push(`
 EXAMPLE — Interactive button (idle/hover/pressed states):
 ${JSON.stringify(INTERACTIVE_BUTTON)}`);
